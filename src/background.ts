@@ -1,3 +1,4 @@
+import { action } from "webextension-polyfill";
 import { PomodoroHistory, StorageChanges, Todo } from "./types";
 import { updateBadge } from "./utils/badgeExtension";
 import { createNotification } from "./utils/notification";
@@ -34,8 +35,10 @@ let completedTodos: Todo[] = [];
 let todosStateAtStart: Todo[] = [];
 
 const updateVariables = (changes: StorageChanges): void => {
-  if (changes.time !== undefined) time = changes.time;
-  if (changes.workTime) WORK_TIME = changes.workTime;
+  if (changes.workTime) {
+    time = changes.workTime;
+    WORK_TIME = changes.workTime;
+  }
   if (changes.breakTime) BREAK_TIME = changes.breakTime;
   if (changes.longBreak) LONG_BREAK_TIME = changes.longBreak;
 
@@ -53,9 +56,7 @@ const updateVariables = (changes: StorageChanges): void => {
 
 chrome.storage.local.get(
   [
-    "time",
     "workTime",
-    "isRunning",
     "breakTime",
     "selectedSound",
     "isSoundEnabled",
@@ -66,15 +67,10 @@ chrome.storage.local.get(
   (result) => updateVariables(result as StorageChanges)
 );
 
-chrome.runtime.onStartup.addListener(() => {
-  stopTimer();
-});
-
 chrome.runtime.onInstalled.addListener(() => {
   chrome.action.setBadgeBackgroundColor({ color: "#40A662" });
   updateBadge(time);
   chrome.storage.local.set({
-    time,
     workTime: WORK_TIME,
     breakTime: BREAK_TIME,
     longBreak: LONG_BREAK_TIME,
@@ -87,14 +83,6 @@ chrome.storage.onChanged.addListener((changes) => {
     Object.entries(changes).map(([key, value]) => [key, value.newValue])
   );
   updateVariables(newChanges);
-
-  if (changes.isRunning) {
-    if (newChanges.isRunning) {
-      startTimer();
-    } else {
-      stopTimer();
-    }
-  }
 
   // If the user completes a todo while the timer is running
   if (changes.todos && newChanges.todos && isRunning) {
@@ -110,13 +98,46 @@ chrome.storage.onChanged.addListener((changes) => {
   if ((changes.blockedSites || changes.allowedUrls) && isRunning) {
     blockAllSites();
   }
-
-  if (changes.workTime) {
-    updateBadge(WORK_TIME);
-  }
 });
 
+chrome.runtime.onMessage.addListener(
+  (message: any, _sender: any, sendResponse: any) => {
+    if (message.action === "getTimerState") {
+      sendResponse({ time, isRunning, isBreak });
+    }
+
+    if (message.action === "startTimer") {
+      startTimer();
+    }
+
+    if (message.action === "stopTimer") {
+      stopTimer();
+    }
+
+    if (message.action === "skipTimer") {
+      time = 0;
+      sendResponse({ time });
+    }
+
+    if (message.action === "updateTimerSettings") {
+      const { workTime, longBreak, breakTime } = message;
+      time = workTime;
+
+      updateBadge(time);
+      chrome.storage.local.set({ workTime, longBreak, breakTime });
+      chrome.runtime.sendMessage({
+        action: "getTimerState",
+        time,
+        isRunning,
+        isBreak,
+      });
+    }
+  }
+);
+
 const startTimer = (): void => {
+  isRunning = true;
+  isBreak = false;
   clearInterval(interval);
   blockAllSites();
 
@@ -131,7 +152,12 @@ const startTimer = (): void => {
     if (time <= 0) {
       handleTimeEnds();
     } else {
-      chrome.storage.local.set({ time });
+      chrome.runtime.sendMessage({
+        action: "getTimerState",
+        time,
+        isRunning,
+        isBreak,
+      });
     }
 
     updateBadge(time);
@@ -147,7 +173,12 @@ const stopTimer = async (): Promise<void> => {
   time = WORK_TIME;
   isRunning = false;
   isBreak = false;
-  await chrome.storage.local.set({ isRunning, time, isBreak });
+  await chrome.runtime.sendMessage({
+    action: "getTimerState",
+    time,
+    isRunning,
+    isBreak,
+  });
 
   completedTodos = [];
   pomodoroCount = 0;
@@ -161,6 +192,7 @@ const handleTimeEnds = (): void => {
     playSound();
   }
 
+  let isLongBreak = false;
   pomodoroCount = isBreak ? pomodoroCount : pomodoroCount + 1;
   isBreak = !isBreak;
 
@@ -172,7 +204,8 @@ const handleTimeEnds = (): void => {
 
   if (isBreak && pomodoroCount % 4 === 0) {
     time = LONG_BREAK_TIME;
-    chrome.storage.local.set({ isBreak, time, isLongBreak: true });
+    isLongBreak = true;
+    // chrome.storage.local.set({ isBreak, time, isLongBreak: true });
 
     if (isNotificationEnabled) {
       createNotification({
@@ -182,7 +215,8 @@ const handleTimeEnds = (): void => {
     }
   } else {
     time = isBreak ? BREAK_TIME : WORK_TIME;
-    chrome.storage.local.set({ isBreak, time, isLongBreak: false });
+    isLongBreak = false;
+    // chrome.storage.local.set({ isBreak, time, isLongBreak: false });
 
     if (isNotificationEnabled) {
       createNotification({
@@ -191,6 +225,13 @@ const handleTimeEnds = (): void => {
       });
     }
   }
+
+  chrome.runtime.sendMessage({
+    action: "getTimerState",
+    isBreak,
+    time,
+    isLongBreak,
+  });
 
   const badgeColor = isBreak ? "#ffccd5" : "#40A662";
   chrome.action.setBadgeBackgroundColor({ color: badgeColor });

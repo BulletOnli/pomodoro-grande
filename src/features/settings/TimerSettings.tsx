@@ -22,7 +22,7 @@ const LONG_BREAK_OPTIONS = [1, 15, 20, 25, 30].map((option) =>
 );
 
 const TimerSettings = () => {
-  const [time, setTime] = useState(WORKING_OPTIONS[2]);
+  const [workTime, setWorkTime] = useState(WORKING_OPTIONS[2]);
   const [breakTime, setBreakTime] = useState(BREAK_OPTIONS[1]);
   const [isRunning, setIsRunning] = useState(false);
   const [longBreak, setLongBreak] = useState(LONG_BREAK_OPTIONS[1]);
@@ -31,36 +31,56 @@ const TimerSettings = () => {
     const loadSettings = async () => {
       const data = await browser.storage.local.get([
         "breakTime",
-        "isRunning",
         "longBreak",
         "workTime",
       ]);
 
-      setTime(data?.workTime?.toString() ?? WORKING_OPTIONS[2]);
+      setWorkTime(data?.workTime?.toString() ?? WORKING_OPTIONS[2]);
       setBreakTime(data?.breakTime?.toString() ?? BREAK_OPTIONS[1]);
-      setIsRunning((data.isRunning as boolean) ?? false);
       setLongBreak(data?.longBreak?.toString() ?? LONG_BREAK_OPTIONS[1]);
     };
 
     loadSettings();
+
+    const updateTimerState = (data: any) => {
+      if (data.isRunning !== undefined) setIsRunning(data.isRunning);
+    };
+
+    // Initial fetch
+    chrome.runtime.sendMessage({ action: "getTimerState" }, updateTimerState);
   }, []);
 
   const handleWorkTimeChange = (value: string) => {
-    setTime(value);
-    browser.storage.local.set({
-      time: parseInt(value),
+    setWorkTime(value);
+
+    browser.runtime.sendMessage({
+      action: "updateTimerSettings",
       workTime: parseInt(value),
+      breakTime: parseInt(breakTime),
+      longBreak: parseInt(longBreak),
     });
   };
 
   const handleBreakTimeChange = (value: string) => {
     setBreakTime(value);
-    browser.storage.local.set({ breakTime: parseInt(value) });
+
+    browser.runtime.sendMessage({
+      action: "updateTimerSettings",
+      workTime: parseInt(workTime),
+      breakTime: parseInt(value),
+      longBreak: parseInt(longBreak),
+    });
   };
 
   const handleLongBreakChange = (value: string) => {
     setLongBreak(value);
-    browser.storage.local.set({ longBreak: parseInt(value) });
+
+    browser.runtime.sendMessage({
+      action: "updateTimerSettings",
+      workTime: parseInt(workTime),
+      breakTime: parseInt(breakTime),
+      longBreak: parseInt(value),
+    });
   };
 
   return (
@@ -74,9 +94,9 @@ const TimerSettings = () => {
 
         <Select
           disabled={isRunning}
-          value={time}
+          value={workTime}
           onValueChange={handleWorkTimeChange}
-          defaultValue={time}
+          defaultValue={workTime}
         >
           <SelectTrigger className="w-[180px] h-8">
             <SelectValue placeholder="Select time" />

@@ -11,47 +11,38 @@ const PomodoroTimer = () => {
   const [isLongBreak, setIsLongBreak] = useState(false);
 
   useEffect(() => {
-    const syncState = async () => {
-      const result = await chrome.storage.local.get([
-        "time",
-        "isRunning",
-        "isBreak",
-        "isLongBreak",
-      ]);
-      setTime((result.time as number) ?? 0);
-      setIsRunning((result.isRunning as boolean) ?? false);
-      setIsBreak((result.isBreak as boolean) ?? false);
-      setIsLongBreak((result.isLongBreak as boolean) ?? false);
+    const updateTimerState = (data: any) => {
+      if (data.time !== undefined) setTime(data.time);
+      if (data.isRunning !== undefined) setIsRunning(data.isRunning);
+      if (data.isBreak !== undefined) setIsBreak(data.isBreak);
+      if (data.isLongBreak !== undefined) setIsLongBreak(data.isLongBreak);
     };
 
-    syncState();
+    chrome.runtime.sendMessage({ action: "getTimerState" }, updateTimerState);
 
-    const handleStorageChange = (changes: any) => {
-      if (changes.time) setTime(changes.time.newValue);
-      if (changes.isRunning) setIsRunning(changes.isRunning.newValue);
-      if (changes.isBreak) setIsBreak(changes.isBreak.newValue);
-      if (changes.isLongBreak) setIsLongBreak(changes.isLongBreak.newValue);
+    const messageListener = (message: any) => {
+      if (message.action === "getTimerState") {
+        updateTimerState(message);
+      }
     };
 
-    chrome.storage.onChanged.addListener(handleStorageChange);
+    chrome.runtime.onMessage.addListener(messageListener);
+
     return () => {
-      chrome.storage.onChanged.removeListener(handleStorageChange);
+      chrome.runtime.onMessage.removeListener(messageListener);
     };
   }, []);
 
   const startTimer = () => {
-    chrome.storage.local.set({ isRunning: true, isBreak: false });
+    chrome.runtime.sendMessage({ action: "startTimer" });
   };
 
   const stopTimer = () => {
-    chrome.storage.local.set({
-      isRunning: false,
-      isBreak: false,
-    });
+    chrome.runtime.sendMessage({ action: "stopTimer" });
   };
 
   const skipTimer = debounce(() => {
-    chrome.storage.local.set({ time: 0 });
+    chrome.runtime.sendMessage({ action: "skipTimer" });
   }, 1000);
 
   return (
