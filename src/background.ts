@@ -1,5 +1,5 @@
-import backgroundMusics from "./data/background-musics";
-import sounds from "./data/sounds";
+import backgroundMusics from "./constants/background-musics";
+import sounds from "./constants/sounds";
 import { PomodoroHistory, StorageChanges, Todo } from "./types";
 import { updateBadge } from "./utils/badgeExtension";
 import { createNotification } from "./utils/notification";
@@ -23,6 +23,7 @@ let isRunning = false;
 let isBreak = false;
 let ultraFocusMode = false;
 let isPaused = false;
+let isAutoStartEnabled = false;
 
 let interval: NodeJS.Timeout | undefined;
 let time = WORK_TIME;
@@ -61,6 +62,9 @@ const updateVariables = (changes: StorageChanges): void => {
   if (changes.ultraFocusMode !== undefined) {
     ultraFocusMode = changes.ultraFocusMode;
   }
+  if (changes.isAutoStartEnabled !== undefined) {
+    isAutoStartEnabled = changes.isAutoStartEnabled;
+  }
 
   // Music settings
   if (changes.selectedMusic) selectedMusic = changes.selectedMusic;
@@ -76,6 +80,7 @@ chrome.storage.local.get(
     "workTime",
     "isRunning",
     "isPaused",
+    "isAutoStartEnabled",
     "breakTime",
     "selectedSound",
     "isSoundEnabled",
@@ -91,7 +96,16 @@ chrome.storage.local.get(
 );
 
 chrome.runtime.onStartup.addListener(() => {
-  stopTimer();
+  chrome.storage.local.get(["isAutoStartEnabled"], async (result) => {
+    isAutoStartEnabled = result.isAutoStartEnabled ?? false;
+
+    if (isAutoStartEnabled) {
+      startTimer().catch(console.error);
+      await playMusic();
+    } else {
+      stopTimer();
+    }
+  });
 });
 
 chrome.runtime.onInstalled.addListener(() => {

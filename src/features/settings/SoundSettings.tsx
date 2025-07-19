@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import debounce from "@/utils/debounce";
-import sounds from "@/data/sounds";
+import sounds from "@/constants/sounds";
 
 const SoundSettings = () => {
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);

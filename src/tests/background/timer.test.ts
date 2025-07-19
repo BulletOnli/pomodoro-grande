@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { mockChrome } from "../setup";
 import { handleTimeEnds } from "../../background";
-import sounds from "@/data/sounds";
+import sounds from "@/constants/sounds";
 
 describe("Timer Management", () => {
   it("should switch to break mode when work session ends", async () => {

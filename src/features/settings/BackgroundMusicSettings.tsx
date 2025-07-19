@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import debounce from "@/utils/debounce";
-import BackgroundMusics from "@/data/background-musics";
+import BackgroundMusics from "@/constants/background-musics";
 import { useTimer } from "@/context/TimerContext";
 
 const BackgroundMusicSettings = () => {

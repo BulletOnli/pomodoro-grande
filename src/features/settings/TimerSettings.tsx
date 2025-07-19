@@ -33,6 +33,7 @@ const TimerSettings = () => {
   const [breakTime, setBreakTime] = useState(DEFAULT_BREAK_TIME);
   const [longBreak, setLongBreak] = useState(DEFAULT_LONG_BREAK_TIME);
   const { isRunning, ultraFocusMode, setUltraFocusMode } = useTimer();
+  const [isAutoStartEnabled, setIsAutoStartEnabled] = useState(false);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -40,11 +41,13 @@ const TimerSettings = () => {
         "breakTime",
         "longBreak",
         "workTime",
+        "isAutoStartEnabled",
       ]);
 
       setTime(data?.workTime?.toString() ?? DEFAULT_WORK_TIME);
       setBreakTime(data?.breakTime?.toString() ?? DEFAULT_BREAK_TIME);
       setLongBreak(data?.longBreak?.toString() ?? DEFAULT_LONG_BREAK_TIME);
+      setIsAutoStartEnabled(data?.isAutoStartEnabled ?? false);
     };
 
     loadSettings();
@@ -80,6 +83,11 @@ const TimerSettings = () => {
         workTime: parseInt(DEFAULT_WORK_TIME),
       });
     }
+  };
+
+  const handleAutoStartChange = (value: boolean) => {
+    setIsAutoStartEnabled(value);
+    chrome.storage.local.set({ isAutoStartEnabled: value });
   };
 
   const formatSelectTime = (value: number) => {
@@ -241,6 +249,28 @@ const TimerSettings = () => {
           </Select>
         </div>
       )}
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <p>Auto Start</p>
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger>
+                <CircleHelp className="text-primary-custom size-4" />
+              </TooltipTrigger>
+              <TooltipContent className="w-[200px] bg-primary-custom text-center">
+                <p>Automatically start the timer when you open the browser.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        <Switch
+          className={`data-[state=checked]:bg-primary-custom`}
+          checked={isAutoStartEnabled}
+          onCheckedChange={handleAutoStartChange}
+        />
+      </div>
     </div>
   );
 };
