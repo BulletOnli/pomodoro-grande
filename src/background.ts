@@ -22,6 +22,7 @@ let BLOCKED_SITES: string[] = [
 let isRunning = false;
 let isBreak = false;
 let ultraFocusMode = false;
+let isPaused = false;
 
 let interval: NodeJS.Timeout | undefined;
 let time = WORK_TIME;
@@ -50,6 +51,7 @@ const updateVariables = (changes: StorageChanges): void => {
   if (changes.soundVolume !== undefined) soundVolume = changes.soundVolume;
 
   if (changes.isRunning !== undefined) isRunning = changes.isRunning;
+  if (changes.isPaused !== undefined) isPaused = changes.isPaused;
   if (changes.isSoundEnabled !== undefined) {
     isSoundEnabled = changes.isSoundEnabled;
   }
@@ -73,6 +75,7 @@ chrome.storage.local.get(
     "time",
     "workTime",
     "isRunning",
+    "isPaused",
     "breakTime",
     "selectedSound",
     "isSoundEnabled",
@@ -108,8 +111,16 @@ chrome.runtime.onMessage.addListener((message) => {
     startTimer().catch(console.error);
   }
 
+  if (message.type === "pause-timer") {
+    pauseTimer().catch(console.error);
+  }
+
   if (message.type === "stop-timer") {
     stopTimer().catch(console.error);
+  }
+
+  if (message.type === "skip-timer") {
+    skipTimer();
   }
 });
 
@@ -139,12 +150,28 @@ chrome.storage.onChanged.addListener((changes) => {
   }
 });
 
+const skipTimer = () => {
+  chrome.storage.local.set({ time: 0 });
+
+  if (isPaused) {
+    startTimer().catch(console.error);
+  }
+};
+
+const pauseTimer = async (): Promise<void> => {
+  clearInterval(interval);
+  isPaused = true;
+  chrome.storage.local.set({ isPaused });
+  stopMusic();
+};
+
 const startTimer = async (): Promise<void> => {
   clearInterval(interval);
   blockAllSites();
   isRunning = true;
-  isBreak = false;
-  chrome.storage.local.set({ isRunning, isBreak });
+  isBreak = isPaused ? isBreak : false;
+  isPaused = false;
+  chrome.storage.local.set({ isRunning, isBreak, isPaused });
 
   // Start playing music if enabled
   await playMusic();
@@ -176,11 +203,12 @@ const stopTimer = async (): Promise<void> => {
   time = WORK_TIME;
   isRunning = false;
   isBreak = false;
+  isPaused = false;
 
   // Stop music when timer stops
   stopMusic();
 
-  await chrome.storage.local.set({ isRunning, time, isBreak });
+  await chrome.storage.local.set({ isRunning, time, isBreak, isPaused });
 
   completedTodos = [];
   pomodoroCount = 0;
@@ -206,6 +234,7 @@ export const handleTimeEnds = async (): Promise<void> => {
 
   pomodoroCount = isBreak ? pomodoroCount : pomodoroCount + 1;
   isBreak = !isBreak;
+  isPaused = false;
   let isLongBreak = pomodoroCount % 4 === 0;
 
   if (isBreak) {
@@ -238,7 +267,7 @@ export const handleTimeEnds = async (): Promise<void> => {
     }
   }
 
-  chrome.storage.local.set({ isBreak, time, isLongBreak });
+  chrome.storage.local.set({ isBreak, time, isLongBreak, isPaused });
   const badgeColor = isBreak ? "#ffccd5" : "#40A662";
   chrome.action.setBadgeBackgroundColor({ color: badgeColor });
 };
@@ -270,7 +299,7 @@ const playSound = async (): Promise<void> => {
 };
 
 const playMusic = async (): Promise<void> => {
-  if (!isMusicEnabled || !selectedMusic) return;
+  if (!isMusicEnabled || !selectedMusic || isBreak) return;
 
   await ensureOffscreenDocument();
   chrome.runtime.sendMessage({

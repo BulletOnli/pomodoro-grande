@@ -20,7 +20,7 @@ const LeaveAReviewPopup = () => {
     chrome.storage.local.set({ reviewPopupClosed: true });
   };
 
-  if (isClosed) return null;
+  // if (isClosed) return null;
 
   return (
     <div className="text-xs px-4 py-1 flex items-center text-center gap-2 rounded-full border">

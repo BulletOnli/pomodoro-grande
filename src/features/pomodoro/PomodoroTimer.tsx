@@ -6,12 +6,15 @@ import TodoProgress from "../todos/TodoProgress";
 import { ONE_HOUR } from "@/constants";
 import { useTimer } from "@/context/TimerContext";
 import LeaveAReviewPopup from "@/components/LeaveAReviewPopup";
+import { Pause, Play } from "lucide-react";
 
 const PomodoroTimer = () => {
   const [time, setTime] = useState(0);
   const {
     isRunning,
     setIsRunning,
+    isPaused,
+    setIsPaused,
     isBreak,
     isLongBreak,
     setIsBreak,
@@ -34,6 +37,7 @@ const PomodoroTimer = () => {
       Object.entries(changes).forEach(([key, { newValue }]) => {
         if (key === "time") setTime(newValue ?? 0);
         if (key === "isRunning") setIsRunning(newValue ?? false);
+        if (key === "isPaused") setIsPaused(newValue ?? false);
         if (key === "isBreak") setIsBreak(newValue ?? false);
         if (key === "isLongBreak") setIsLongBreak(newValue ?? false);
         if (key === "ultraFocusMode") setUltraFocusMode(newValue ?? false);
@@ -50,12 +54,20 @@ const PomodoroTimer = () => {
     chrome.runtime.sendMessage({ type: "start-timer" });
   };
 
+  const pauseTimer = () => {
+    if (isPaused) {
+      chrome.runtime.sendMessage({ type: "start-timer" });
+    } else {
+      chrome.runtime.sendMessage({ type: "pause-timer" });
+    }
+  };
+
   const stopTimer = () => {
     chrome.runtime.sendMessage({ type: "stop-timer" });
   };
 
   const skipTimer = debounce(() => {
-    chrome.storage.local.set({ time: 0 });
+    chrome.runtime.sendMessage({ type: "skip-timer" });
   }, 1000);
 
   const formatTimer = (time: number) => {
@@ -64,6 +76,16 @@ const PomodoroTimer = () => {
     const sliceStart = time >= ONE_HOUR ? 11 : 14;
 
     return new Date(time).toISOString().slice(sliceStart, 19);
+  };
+
+  const generateTimerText = () => {
+    if (isPaused) return "Timeout! ⏱️";
+
+    if (!isRunning && !isBreak) return "Ready? Start! 🚀";
+    if (isRunning && !isBreak) return "Focus time! ⚡";
+    if (isRunning && isBreak && !isLongBreak) return "Quick break! ☀️";
+    if (isRunning && isBreak && isLongBreak) return "Long Break! ✨";
+    return "";
   };
 
   return (
@@ -89,34 +111,52 @@ const PomodoroTimer = () => {
             isBreak ? "text-red-500" : "text-primary-custom"
           } text-xl text-center font-semibold mb-2`}
         >
-          {!isRunning && !isBreak && "Ready? Start! 🚀"}
-          {isRunning && !isBreak && "Focus time! ⚡"}
-          {isRunning && isBreak && !isLongBreak && "Quick break! ☀️"}
-          {isRunning && isBreak && isLongBreak && "Long Break! ✨"}
+          {generateTimerText()}
         </h1>
       </div>
       <div className="flex flex-wrap justify-center items-center gap-2">
         {isRunning ? (
-          <>
+          <div className="flex flex-col gap-2 items-center justify-center">
             <Button
               size="sm"
-              variant="destructive"
-              className="min-w-28 bg-red-100 text-red-600 border  hover:bg-red-100/80"
-              onClick={stopTimer}
+              className="min-w-28 bg-primary-custom hover:bg-primary-custom/80 text-white hover:text-white"
+              onClick={pauseTimer}
             >
-              Stop
+              {isPaused ? (
+                <>
+                  <Play />
+                  Resume
+                </>
+              ) : (
+                <>
+                  <Pause />
+                  Pause
+                </>
+              )}
             </Button>
-            {isBreak && (
+
+            <div className="flex items-center gap-1 mx-auto">
               <Button
                 size="sm"
-                variant="outline"
-                className="min-w-28 bg-primary-custom hover:bg-primary-custom/80 text-white hover:text-white"
-                onClick={skipTimer}
+                variant="destructive"
+                className="min-w-28 bg-red-500 text-white"
+                onClick={stopTimer}
               >
-                Skip
+                Stop
               </Button>
-            )}
-          </>
+
+              {isBreak && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="min-w-28 bg-primary-custom hover:bg-primary-custom/80 text-white hover:text-white"
+                  onClick={skipTimer}
+                >
+                  Skip
+                </Button>
+              )}
+            </div>
+          </div>
         ) : (
           <Button
             size="sm"
@@ -127,9 +167,10 @@ const PomodoroTimer = () => {
           </Button>
         )}
       </div>
+
       {isRunning && <TodoProgress />}
 
-      <LeaveAReviewPopup />
+      {/* <LeaveAReviewPopup /> */}
     </TabsContent>
   );
 };

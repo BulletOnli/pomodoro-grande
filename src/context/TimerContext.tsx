@@ -10,6 +10,9 @@ interface ContextType {
   isRunning: boolean;
   setIsRunning: (value: boolean) => void;
 
+  isPaused: boolean;
+  setIsPaused: (value: boolean) => void;
+
   isBreak: boolean;
   setIsBreak: (value: boolean) => void;
 
@@ -24,6 +27,7 @@ const TimerContext = createContext<ContextType | undefined>(undefined);
 
 export const TimerContextProvider = ({ children }: { children: ReactNode }) => {
   const [isRunning, setIsRunning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [isLongBreak, setIsLongBreak] = useState(false);
   const [ultraFocusMode, setUltraFocusMode] = useState(false);
@@ -33,11 +37,13 @@ export const TimerContextProvider = ({ children }: { children: ReactNode }) => {
       const result = await chrome.storage.local.get([
         "isRunning",
         "isBreak",
+        "isPaused",
         "isLongBreak",
         "ultraFocusMode",
       ]);
 
       setIsRunning((result.isRunning as boolean) ?? false);
+      setIsPaused((result.isPaused as boolean) ?? false);
       setIsBreak((result.isBreak as boolean) ?? false);
       setIsLongBreak((result.isLongBreak as boolean) ?? false);
       setUltraFocusMode((result.ultraFocusMode as boolean) ?? false);
@@ -51,6 +57,8 @@ export const TimerContextProvider = ({ children }: { children: ReactNode }) => {
       value={{
         isRunning,
         setIsRunning,
+        isPaused,
+        setIsPaused,
         isBreak,
         setIsBreak,
         isLongBreak,

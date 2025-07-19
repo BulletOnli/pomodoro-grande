@@ -24,4 +24,12 @@ export default defineConfig({
       },
     },
   },
+  legacy: {
+    skipWebSocketTokenCheck: true,
+  },
+  server: {
+    cors: {
+      origin: ["chrome-extension://"],
+    },
+  },
 });
