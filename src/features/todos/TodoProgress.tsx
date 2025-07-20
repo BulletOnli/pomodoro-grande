@@ -24,25 +24,13 @@ const TodoProgress = () => {
     };
   }, []);
 
-  if (todos.length === 0) return null;
-
-  if (completedTodos.length === todos.length) {
-    return (
-      <p className="mt-2 font-medium text-primary-custom">
-        Great work! {completedTodos.length}/{todos.length} Todos completed! 🎉
-      </p>
-    );
-  }
-
   return (
-    <p className="mt-2">
-      <span className="font-semibold text-primary-custom">
-        {completedTodos?.length}
-      </span>{" "}
-      of{" "}
-      <span className="font-semibold text-primary-custom">{todos.length}</span>{" "}
-      Todos Completed
-    </p>
+    <div className="min-w-[80px] flex flex-col items-center justify-center">
+      <p className="text-3xl font-extrabold text-nowrap">
+        {todos.length > 0 ? `${completedTodos.length} of ${todos.length}` : 0}
+      </p>
+      <p className="font-semibold">Todos</p>
+    </div>
   );
 };
 

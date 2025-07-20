@@ -7,6 +7,8 @@ import { ONE_HOUR } from "@/constants";
 import { useTimer } from "@/context/TimerContext";
 import LeaveAReviewPopup from "@/components/LeaveAReviewPopup";
 import { Pause, Play } from "lucide-react";
+import PomodoroCounter from "./PomodoroCounter";
+import FocusSpentCounter from "./FocusSpentCounter";
 
 const PomodoroTimer = () => {
   const [time, setTime] = useState(0);
@@ -95,7 +97,7 @@ const PomodoroTimer = () => {
     >
       <div className="text-center space-y-2 mt-6">
         {ultraFocusMode && (
-          <p className="absolute top-12 left-1/2 -translate-x-1/2 text-[10px] px-4 bg-primary-custom text-white rounded-full">
+          <p className="absolute top-14 left-1/2 -translate-x-1/2 text-[10px] px-4 bg-primary-custom text-white rounded-full">
             Ultra Focus Mode! 🔥
           </p>
         )}
@@ -114,6 +116,7 @@ const PomodoroTimer = () => {
           {generateTimerText()}
         </h1>
       </div>
+
       <div className="flex flex-wrap justify-center items-center gap-2">
         {isRunning ? (
           <div className="flex flex-col gap-2 items-center justify-center">
@@ -168,9 +171,23 @@ const PomodoroTimer = () => {
         )}
       </div>
 
-      {isRunning && <TodoProgress />}
+      <div className="mt-4 flex flex-col items-center justify-center gap-2 text-primary-custom">
+        <TodoProgress />
 
-      {/* <LeaveAReviewPopup /> */}
+        <div className="w-44 h-px bg-primary-custom"></div>
+
+        <div className="w-full flex items-center justify-evenly gap-6  ">
+          <PomodoroCounter />
+
+          <div className="w-px h-12 bg-primary-custom"></div>
+
+          <FocusSpentCounter />
+        </div>
+
+        <p className="text-[10px] font-medium">
+          This updates everytime the time runs out
+        </p>
+      </div>
     </TabsContent>
   );
 };

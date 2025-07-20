@@ -211,6 +211,7 @@ const startTimer = async (): Promise<void> => {
 const stopTimer = async (): Promise<void> => {
   if (pomodoroCount >= 1 || ultraFocusMode) {
     recordPomodoroHistory();
+    chrome.storage.session.set({ pomodoroCount: 0 });
   }
 
   clearInterval(interval);
@@ -282,6 +283,7 @@ export const handleTimeEnds = async (): Promise<void> => {
   }
 
   chrome.storage.local.set({ isBreak, time, isLongBreak, isPaused });
+  chrome.storage.session.set({ pomodoroCount });
   const badgeColor = isBreak ? "#ffccd5" : "#40A662";
   chrome.action.setBadgeBackgroundColor({ color: badgeColor });
 };

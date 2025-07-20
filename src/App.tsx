@@ -9,31 +9,21 @@ import SiteBlocker from "./features/site-blocker/SiteBlocker";
 import AnalyticsTab from "./features/analytics/AnalyticsTab";
 
 const DEFAULT_TAB_SIZE = {
-  width: "w-80",
-  height: "h-[400px]",
+  width: "w-[350px]", // 320px
+  height: "h-[520px]",
 };
 
 const App = () => {
   const [tabSize, setTabSize] = useState(DEFAULT_TAB_SIZE);
 
   const handleTabResize = (value: string) => {
-    if (value === "timer") {
-      setTabSize(DEFAULT_TAB_SIZE);
-    } else if (value === "analytics") {
+    if (value === "analytics") {
       setTabSize({
         width: "w-[550px]",
-        height: "h-[520px]",
-      });
-    } else if (value === "settings") {
-      setTabSize({
-        width: "w-[350px]",
-        height: "h-[500px]",
+        height: DEFAULT_TAB_SIZE.height,
       });
     } else {
-      setTabSize({
-        width: DEFAULT_TAB_SIZE.width,
-        height: "h-[500px]",
-      });
+      setTabSize(DEFAULT_TAB_SIZE);
     }
   };
 

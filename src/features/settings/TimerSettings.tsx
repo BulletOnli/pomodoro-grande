@@ -259,7 +259,7 @@ const TimerSettings = () => {
                 <CircleHelp className="text-primary-custom size-4" />
               </TooltipTrigger>
               <TooltipContent className="w-[200px] bg-primary-custom text-center">
-                <p>Automatically start the timer when you open the browser.</p>
+                <p>Automatically start the timer on browser startup.</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
