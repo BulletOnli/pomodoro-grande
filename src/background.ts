@@ -359,7 +359,7 @@ export const recordPomodoroHistory = (): void => {
 
     const aggregatedHistory: PomodoroHistory[] = Object.values(
       [...history, newData].reduce((acc, current) => {
-        const date = new Date(current.createdAt).toISOString().split("T")[0];
+        const date = new Date(current.createdAt).toISOString();
 
         if (!acc[date]) {
           acc[date] = { ...current, createdAt: date };

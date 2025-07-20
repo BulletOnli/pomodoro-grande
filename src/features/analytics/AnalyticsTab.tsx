@@ -22,13 +22,16 @@ type CustomBarLabel = {
   value: number;
 };
 
+const TODAY_DATE = new Date();
+TODAY_DATE.setHours(0, 0, 0, 0);
+
 const SEVEN_DAYS_DATE = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
 const THIRTY_DAYS_DATE = new Date(Date.now() - 31 * 24 * 60 * 60 * 1000);
 const THREE_MONTHS_DATE = new Date(Date.now() - 93 * 24 * 60 * 60 * 1000);
 
 const CHART_DATA = [
   {
-    createdAt: new Date().toDateString(),
+    createdAt: new Date().toISOString(),
     totalPomodoros: 0,
     completedTodos: 0,
     totalWorkTime: 0,
@@ -54,7 +57,7 @@ const AnalyticsTab = () => {
   const [chartData, setChartData] = useState<PomodoroHistory[]>(CHART_DATA);
   const [activeChart, setActiveChart] =
     useState<keyof typeof chartConfig>("totalPomodoros");
-  const [filterDate, setFilterDate] = useState<Date>(SEVEN_DAYS_DATE);
+  const [filterDate, setFilterDate] = useState<Date>(TODAY_DATE);
 
   useEffect(() => {
     chrome.storage.local.get("pomodoroHistory").then((result) => {
@@ -62,31 +65,85 @@ const AnalyticsTab = () => {
         const data = result.pomodoroHistory as PomodoroHistory[];
 
         const today = new Date();
+        const isToday =
+          filterDate?.toDateString() === TODAY_DATE?.toDateString();
 
-        // Combine data with the same date and filter for the last 7 days
-        const filteredData: PomodoroHistory[] = Object.values(
-          data.reduce((acc: any, current) => {
-            const date = new Date(current.createdAt)
-              .toISOString()
-              .split("T")[0];
+        if (isToday) {
+          // For "Today" filter, group data by hour
+          const hourlyData: PomodoroHistory[] = [];
 
-            const currentDate = new Date(date);
+          // Initialize 24 hours (0-23)
+          for (let hour = 0; hour < 24; hour++) {
+            const hourStart = new Date(today);
+            hourStart.setHours(hour, 0, 0, 0);
 
-            if (currentDate >= filterDate && currentDate <= today) {
-              if (!acc[date]) {
-                acc[date] = { ...current };
-              } else {
-                acc[date].totalPomodoros += current.totalPomodoros;
-                acc[date].completedTodos += current.completedTodos;
-                acc[date].totalWorkTime += current.totalWorkTime;
-              }
+            const hourEnd = new Date(today);
+            hourEnd.setHours(hour, 59, 59, 999);
+
+            // Find all data entries within this hour
+            const hourlyEntries = data.filter((entry) => {
+              const entryDate = new Date(entry.createdAt);
+              return entryDate >= hourStart && entryDate <= hourEnd;
+            });
+
+            if (hourlyEntries.length > 0) {
+              // Sum up the data for this hour
+              const hourlySum = hourlyEntries.reduce(
+                (sum, entry) => ({
+                  totalPomodoros: sum.totalPomodoros + entry.totalPomodoros,
+                  completedTodos: sum.completedTodos + entry.completedTodos,
+                  totalWorkTime: sum.totalWorkTime + entry.totalWorkTime,
+                }),
+                { totalPomodoros: 0, completedTodos: 0, totalWorkTime: 0 }
+              );
+
+              // Create hourly time range label
+              const startHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+              const endHour =
+                hour === 23 ? 12 : hour + 1 > 12 ? hour + 1 - 12 : hour + 1;
+              const startAmPm = hour < 12 ? "am" : "pm";
+              const endAmPm = hour + 1 < 12 || hour + 1 === 24 ? "am" : "pm";
+
+              hourlyData.push({
+                createdAt: `${startHour}${startAmPm}-${endHour}${endAmPm}`,
+                totalPomodoros: hourlySum.totalPomodoros,
+                completedTodos: hourlySum.completedTodos,
+                totalWorkTime: hourlySum.totalWorkTime,
+              });
             }
+          }
 
-            return acc;
-          }, {})
-        );
+          setChartData(hourlyData.length > 0 ? hourlyData : CHART_DATA);
+        } else {
+          // For other filters, use the original daily grouping logic
+          const filteredData: PomodoroHistory[] = Object.values(
+            data.reduce((acc: any, current) => {
+              const date = new Date(current.createdAt)
+                .toISOString()
+                .split("T")[0];
 
-        setChartData(filteredData || CHART_DATA);
+              const currentDate = new Date(date);
+
+              // Include data within the filter range
+              const shouldInclude =
+                currentDate >= filterDate && currentDate <= today;
+
+              if (shouldInclude) {
+                if (!acc[date]) {
+                  acc[date] = { ...current };
+                } else {
+                  acc[date].totalPomodoros += current.totalPomodoros;
+                  acc[date].completedTodos += current.completedTodos;
+                  acc[date].totalWorkTime += current.totalWorkTime;
+                }
+              }
+
+              return acc;
+            }, {})
+          );
+
+          setChartData(filteredData || CHART_DATA);
+        }
       }
     });
   }, [filterDate]);
@@ -110,16 +167,20 @@ const AnalyticsTab = () => {
   );
 
   const renderCustomBarLabel = ({ x, y, width, value }: CustomBarLabel) => {
-    // Hide label for total work time when not viewing the last 7 days
+    // Hide label for total work time when not viewing today or last 7 days
     if (
       activeChart === "totalWorkTime" &&
-      filterDate?.toDateString() !== SEVEN_DAYS_DATE?.toDateString()
+      filterDate?.toDateString() !== SEVEN_DAYS_DATE?.toDateString() &&
+      filterDate?.toDateString() !== TODAY_DATE?.toDateString()
     ) {
       return <></>;
     }
 
-    // Hide label for 30 days and 3 months
-    if (filterDate?.toDateString() === THREE_MONTHS_DATE?.toDateString()) {
+    // Hide label for 30 days and 3 months (but not today)
+    if (
+      filterDate?.toDateString() === THREE_MONTHS_DATE?.toDateString() ||
+      filterDate?.toDateString() === THIRTY_DAYS_DATE?.toDateString()
+    ) {
       return <></>;
     }
 
@@ -131,6 +192,16 @@ const AnalyticsTab = () => {
         {value.toFixed(2).replace(/\.00$/, "")} {labelSuffix}
       </text>
     );
+  };
+
+  const getDateRangeText = () => {
+    const isToday = filterDate?.toDateString() === TODAY_DATE?.toDateString();
+
+    if (isToday) {
+      return `Today's Hourly Breakdown - ${new Date().toLocaleDateString()}`;
+    }
+
+    return `${filterDate?.toLocaleDateString()} - ${new Date()?.toLocaleDateString()}`;
   };
 
   return (
@@ -151,7 +222,17 @@ const AnalyticsTab = () => {
         </TooltipProvider>
       </div>
 
-      <div className="mx-auto flex items-center justify-center gap-2">
+      <div className="mx-auto flex items-center justify-center gap-2 flex-wrap">
+        <p
+          onClick={() => setFilterDate(TODAY_DATE)}
+          className={`${
+            filterDate?.toDateString() === TODAY_DATE?.toDateString()
+              ? "bg-primary-custom"
+              : "bg-primary-custom/70"
+          } text-xs text-white px-4 py-1 hover:bg-primary-custom/90 cursor-pointer rounded-full`}
+        >
+          Today
+        </p>
         <p
           onClick={() => setFilterDate(SEVEN_DAYS_DATE)}
           className={`${
@@ -239,11 +320,19 @@ const AnalyticsTab = () => {
             tickMargin={8}
             minTickGap={32}
             tickFormatter={(value) => {
-              const date = new Date(value);
               const isToday =
+                filterDate?.toDateString() === TODAY_DATE?.toDateString();
+
+              if (isToday) {
+                // For hourly view, return the time range as is
+                return value;
+              }
+
+              const date = new Date(value);
+              const isTodayDate =
                 date.toLocaleDateString() === new Date().toLocaleDateString();
 
-              if (isToday) return "Today";
+              if (isTodayDate) return "Today";
 
               return date.toLocaleDateString("en-US", {
                 month: "short",
@@ -258,6 +347,14 @@ const AnalyticsTab = () => {
                 className="w-[150px]"
                 nameKey="views"
                 labelFormatter={(value) => {
+                  const isToday =
+                    filterDate?.toDateString() === TODAY_DATE?.toDateString();
+
+                  if (isToday) {
+                    // For hourly view, show the time range
+                    return value;
+                  }
+
                   if (
                     new Date(value).toDateString() === new Date().toDateString()
                   ) {
@@ -308,9 +405,7 @@ const AnalyticsTab = () => {
         </BarChart>
       </ChartContainer>
 
-      <p className="text-xs text-center text-zinc-500">
-        {`${filterDate?.toLocaleDateString()} - ${new Date()?.toLocaleDateString()}`}
-      </p>
+      <p className="text-xs text-center text-zinc-500">{getDateRangeText()}</p>
     </div>
   );
 };
