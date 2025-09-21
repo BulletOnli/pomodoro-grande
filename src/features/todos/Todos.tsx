@@ -1,4 +1,14 @@
 import { useState, useEffect, FormEvent } from "react";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+  DroppableProvided,
+  DraggableProvided,
+  DraggableStateSnapshot,
+  DroppableStateSnapshot,
+} from "@hello-pangea/dnd";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,7 +20,6 @@ const Todos = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Load todos from storage on mount
     chrome.storage.local.get("todos").then((result) => {
       if (result.todos) setTodos(result.todos as Todo[]);
     });
@@ -46,9 +55,24 @@ const Todos = () => {
     chrome.storage.local.set({ todos: updatedTodos });
   };
 
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    const reordered = Array.from(todos);
+    const [removed] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, removed);
+    setTodos(reordered);
+    chrome.storage.local.set({ todos: reordered });
+  };
+
   return (
     <div className="w-full space-y-2">
-      <h1 className="text-base text-center font-semibold mb-2">Todos</h1>
+      <div className="">
+        <h1 className="text-base text-center font-semibold">Todos</h1>
+        <p className="text-xs text-center text-gray-500 ">
+          Tip: Drag and drop todos based on priority!
+        </p>
+      </div>
+
       <form onSubmit={addTodo} className="flex items-center gap-1">
         <Input
           value={inputValue}
@@ -56,7 +80,6 @@ const Todos = () => {
           placeholder="What do you want to do?"
           className="h-8 text-sm placeholder:text-xs"
         />
-
         <Button
           type="submit"
           className="bg-primary-custom hover:bg-primary-custom/90"
@@ -66,39 +89,64 @@ const Todos = () => {
         </Button>
       </form>
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-      <ul className="custom-scrollbar max-h-[20rem] overflow-y-auto">
-        {todos.length === 0 && (
-          <p className="text-sm font-light text-center mt-4">No todos yet</p>
-        )}
-        {todos.map((todo) => (
-          <li
-            key={todo.id}
-            className="flex justify-between items-center p-2 mb-2 rounded shadow"
-          >
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id={`todo-${todo.id}`}
-                checked={todo.isCompleted}
-                onCheckedChange={() => toggleTodo(todo.id)}
-              />
-              <label
-                htmlFor={`todo-${todo.id}`}
-                className={`max-w-[200px] break-words ${
-                  todo.isCompleted ? "line-through text-gray-500" : ""
-                }`}
-              >
-                {todo.title}
-              </label>
-            </div>
-            <button
-              onClick={() => removeTodo(todo.id)}
-              className="text-primary-custom hover:text-primary-custom/90 focus:outline-none"
+
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId="todos-droppable">
+          {(provided: DroppableProvided, _snapshot: DroppableStateSnapshot) => (
+            <ul
+              className="custom-scrollbar max-h-[20rem] overflow-y-auto"
+              ref={provided.innerRef}
+              {...provided.droppableProps}
             >
-              ✕
-            </button>
-          </li>
-        ))}
-      </ul>
+              {todos.length === 0 && (
+                <p className="text-sm font-light text-center mt-4">
+                  No todos yet
+                </p>
+              )}
+              {todos.map((todo, index) => (
+                <Draggable key={todo.id} draggableId={todo.id} index={index}>
+                  {(
+                    provided: DraggableProvided,
+                    snapshot: DraggableStateSnapshot
+                  ) => (
+                    <li
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                      className={`flex justify-between items-center p-2 mb-2 rounded shadow bg-white transition-shadow ${
+                        snapshot.isDragging ? "shadow-md" : ""
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`todo-${todo.id}`}
+                          checked={todo.isCompleted}
+                          onCheckedChange={() => toggleTodo(todo.id)}
+                        />
+                        <label
+                          htmlFor={`todo-${todo.id}`}
+                          className={`max-w-[200px] break-words ${
+                            todo.isCompleted ? "line-through text-gray-500" : ""
+                          }`}
+                        >
+                          {todo.title}
+                        </label>
+                      </div>
+                      <button
+                        onClick={() => removeTodo(todo.id)}
+                        className="text-primary-custom hover:text-primary-custom/90 focus:outline-none"
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </ul>
+          )}
+        </Droppable>
+      </DragDropContext>
     </div>
   );
 };
