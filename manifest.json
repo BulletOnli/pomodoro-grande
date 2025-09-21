@@ -4,7 +4,6 @@
   "short_name": "Pomodoro Timer",
   "version": "2.5.0",
   "description": "A customizable Pomodoro timer with background music, focus modes, and task tracking for enhanced productivity.",
-  "author": "Gemmuel Dela Peña",
   "icons": {
     "16": "assets/images/icon16.png",
     "48": "assets/images/icon48.png",
