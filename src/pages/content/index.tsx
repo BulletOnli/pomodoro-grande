@@ -53,11 +53,12 @@ const removeFocusOverlay = (): void => {
 const Content: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [blockedSites, setBlockedSites] = useState<string[]>([]);
   const [allowedUrls, setAllowedUrls] = useState<string[]>([]);
 
   const handleOverlay = useCallback(async () => {
-    if (isBreak) {
+    if (isBreak || isPaused) {
       removeFocusOverlay();
       return;
     }
@@ -70,18 +71,20 @@ const Content: React.FC = () => {
     } else {
       removeFocusOverlay();
     }
-  }, [isRunning, isBreak, blockedSites, allowedUrls]);
+  }, [isRunning, isBreak, isPaused, blockedSites, allowedUrls]);
 
   useEffect(() => {
     const fetchStorageData = async () => {
       const result: StorageChanges = await chrome.storage.local.get([
         "isRunning",
         "isBreak",
+        "isPaused",
         "blockedSites",
         "allowedUrls",
       ]);
       setIsRunning(result.isRunning ?? false);
       setIsBreak(result.isBreak ?? false);
+      setIsPaused(result.isPaused ?? false);
       setBlockedSites(result.blockedSites ?? []);
       setAllowedUrls(result.allowedUrls ?? []);
     };
@@ -94,6 +97,7 @@ const Content: React.FC = () => {
       Object.entries(changes).forEach(([key, { newValue }]) => {
         if (key === "isRunning") setIsRunning(newValue ?? false);
         if (key === "isBreak") setIsBreak(newValue ?? false);
+        if (key === "isPaused") setIsPaused(newValue ?? false);
         if (key === "blockedSites") setBlockedSites(newValue ?? []);
         if (key === "allowedUrls") setAllowedUrls(newValue ?? []);
       });

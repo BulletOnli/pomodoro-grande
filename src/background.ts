@@ -159,6 +159,10 @@ chrome.storage.onChanged.addListener((changes) => {
     blockAllSites();
   }
 
+  if (isPaused) {
+    unBlockAllSites();
+  }
+
   if (changes.workTime) {
     updateBadge(WORK_TIME);
   }
@@ -252,7 +256,7 @@ export const handleTimeEnds = async (): Promise<void> => {
   isPaused = false;
   let isLongBreak = pomodoroCount % 4 === 0;
 
-  if (isBreak) {
+  if (isBreak || isPaused) {
     unBlockAllSites();
     stopMusic();
   } else {
