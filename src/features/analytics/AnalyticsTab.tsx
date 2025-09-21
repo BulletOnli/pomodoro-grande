@@ -60,7 +60,7 @@ const AnalyticsTab = () => {
   const [filterDate, setFilterDate] = useState<Date>(TODAY_DATE);
 
   useEffect(() => {
-    chrome.storage.local.get("pomodoroHistory").then((result) => {
+    chrome.storage.sync.get("pomodoroHistory").then((result) => {
       if (result.pomodoroHistory) {
         const data = result.pomodoroHistory as PomodoroHistory[];
 

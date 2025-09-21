@@ -5,7 +5,6 @@ import debounce from "@/utils/debounce";
 import TodoProgress from "../todos/TodoProgress";
 import { ONE_HOUR } from "@/constants";
 import { useTimer } from "@/context/TimerContext";
-import LeaveAReviewPopup from "@/components/LeaveAReviewPopup";
 import { Pause, Play } from "lucide-react";
 import PomodoroCounter from "./PomodoroCounter";
 import FocusSpentCounter from "./FocusSpentCounter";

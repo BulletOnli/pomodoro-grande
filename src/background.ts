@@ -352,7 +352,7 @@ export const recordPomodoroHistory = (): void => {
 
   const totalWorkTime = totalMilliseconds / 1000 / 60;
 
-  chrome.storage.local.get("pomodoroHistory", (result) => {
+  chrome.storage.sync.get("pomodoroHistory", (result) => {
     const history: PomodoroHistory[] = result.pomodoroHistory || [];
     const newData = {
       createdAt: new Date().toLocaleString(),
@@ -378,6 +378,6 @@ export const recordPomodoroHistory = (): void => {
     );
 
     const trimmedHistory = aggregatedHistory.slice(-100);
-    chrome.storage.local.set({ pomodoroHistory: trimmedHistory });
+    chrome.storage.sync.set({ pomodoroHistory: trimmedHistory });
   });
 };
