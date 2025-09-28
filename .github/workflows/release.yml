@@ -32,7 +32,25 @@ jobs:
       - name: Zip dist folder
         run: zip -r extension.zip dist
 
+      - name: Generate release notes template
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          cat <<EOF > RELEASE_NOTES.md
+          # 🚀 Release Notes - $VERSION
+
+          ## ✨ Features
+          - 
+
+          ## 🛠 Refactor
+          - 
+
+          ## 🐞 Fixes
+          - 
+            
+          EOF
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           files: extension.zip
+          body_path: RELEASE_NOTES.md

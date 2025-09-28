@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Pomodoro Grande: Advanced Pomodoro Timer",
   "short_name": "Pomodoro Timer",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "A customizable Pomodoro timer with background music, focus modes, and task tracking for enhanced productivity.",
   "icons": {
     "16": "assets/images/icon16.png",
