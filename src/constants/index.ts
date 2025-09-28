@@ -20,3 +20,10 @@ export const ULTRA_FOCUS_MODE_OPTIONS = [1, 25, 60, 120, 180, 240, 300].map(
 
 export const REVIEW_PAGE =
   "https://chromewebstore.google.com/detail/pomodoro-grande/hmkklgcpkihbecjbohepediganhefdof/reviews";
+
+export const RELEASE_NOTES_URL =
+  "https://github.com/BulletOnli/pomodoro-grande/releases";
+
+export const APP_VERSION = "v2.5.1";
+
+export const FEEDBACK_FORM_URL = "https://forms.gle/SQ6JwgWiRv79FDPv5";

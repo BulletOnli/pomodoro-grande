@@ -8,13 +8,19 @@ import {
   Bug,
   Clock,
   ExternalLink,
+  Hammer,
   HandHeart,
   Music,
   Star,
 } from "lucide-react";
 import { useState } from "react";
 import BackgroundMusicSettings from "./BackgroundMusicSettings";
-import { REVIEW_PAGE } from "@/constants";
+import {
+  APP_VERSION,
+  FEEDBACK_FORM_URL,
+  RELEASE_NOTES_URL,
+  REVIEW_PAGE,
+} from "@/constants";
 
 const SettingsPage = () => {
   const [currentSection, setCurrentSection] = useState<string | null>(null);
@@ -99,29 +105,48 @@ const SettingsPage = () => {
       <div>
         <MenuItem
           icon={<Star className="size-5" />}
-          title="Your feedback matters!"
-          subtitle="Help us improve by leaving a review"
+          title="Boost Our Motivation"
+          subtitle="A review keeps us improving"
           url={REVIEW_PAGE}
           rightIcon={<ExternalLink className="w-4 h-4" />}
           external
         />
         <MenuItem
           icon={<Bug className="size-5" />}
-          title="Report & Suggest"
-          subtitle="Found a bug? Have an idea?"
-          url="https://github.com/BulletOnli/pomodoro-grande/issues"
+          title="Help Us Improve"
+          subtitle="Report problems or suggest features"
+          // url="https://github.com/BulletOnli/pomodoro-grande/issues"
+          url={FEEDBACK_FORM_URL}
           rightIcon={<ExternalLink className="w-4 h-4" />}
           external
         />
+
         <MenuItem
-          icon={<HandHeart className="size-5" />}
-          title="Buy me a Tomato"
-          subtitle="Send some Tomato Love"
-          url="https://buymeacoffee.com/bulletonli"
+          icon={<Hammer className="size-5" />}
+          title="Release Notes"
+          subtitle="See what's new in the latest version"
+          url={RELEASE_NOTES_URL}
           rightIcon={<ExternalLink className="w-4 h-4" />}
           external
         />
       </div>
+
+      <div className="flex items-center justify-center gap-2">
+        <div className="w-full h-px bg-border"></div>
+        <div className="text-zinc-400 text-xs text-nowrap font-semibold">
+          {APP_VERSION}
+        </div>
+        <div className="w-full h-px bg-border"></div>
+      </div>
+
+      <MenuItem
+        icon={<HandHeart className="size-5" />}
+        title="Buy me a Tomato"
+        subtitle="Send some Tomato Love"
+        url="https://buymeacoffee.com/bulletonli"
+        rightIcon={<ExternalLink className="w-4 h-4" />}
+        external
+      />
     </div>
   );
 };
@@ -157,7 +182,7 @@ const MenuItem = ({
   return (
     <Wrapper
       {...wrapperProps}
-      className="w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-left group hover:bg-primary-custom hover:text-white"
+      className="w-full flex items-center gap-3 px-4 py-1 rounded-lg transition-colors text-left group hover:bg-primary-custom hover:text-white"
     >
       {icon}
       <div className="flex-1">
