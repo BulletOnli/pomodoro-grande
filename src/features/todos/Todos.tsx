@@ -1,4 +1,5 @@
 import { useState, useEffect, FormEvent } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   DragDropContext,
   Droppable,
@@ -64,6 +65,10 @@ const Todos = () => {
     chrome.storage.local.set({ todos: reordered });
   };
 
+  const sortedTodos = todos
+    .slice()
+    .sort((a, b) => Number(a.isCompleted) - Number(b.isCompleted));
+
   return (
     <div className="w-full space-y-2">
       <div className="">
@@ -103,45 +108,56 @@ const Todos = () => {
                   No todos yet
                 </p>
               )}
-              {todos.map((todo, index) => (
-                <Draggable key={todo.id} draggableId={todo.id} index={index}>
-                  {(
-                    provided: DraggableProvided,
-                    snapshot: DraggableStateSnapshot
-                  ) => (
-                    <li
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      className={`flex justify-between items-center p-2 mb-2 rounded shadow bg-white transition-shadow ${
-                        snapshot.isDragging ? "shadow-md" : ""
-                      }`}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`todo-${todo.id}`}
-                          checked={todo.isCompleted}
-                          onCheckedChange={() => toggleTodo(todo.id)}
-                        />
-                        <label
-                          htmlFor={`todo-${todo.id}`}
-                          className={`max-w-[200px] break-words ${
-                            todo.isCompleted ? "line-through text-gray-500" : ""
-                          }`}
-                        >
-                          {todo.title}
-                        </label>
-                      </div>
-                      <button
-                        onClick={() => removeTodo(todo.id)}
-                        className="text-primary-custom hover:text-primary-custom/90 focus:outline-none"
+              <AnimatePresence>
+                {sortedTodos.map((todo, index) => (
+                  <Draggable key={todo.id} draggableId={todo.id} index={index}>
+                    {(
+                      provided: DraggableProvided,
+                      snapshot: DraggableStateSnapshot
+                    ) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
                       >
-                        ✕
-                      </button>
-                    </li>
-                  )}
-                </Draggable>
-              ))}
+                        <motion.li
+                          className={`flex justify-between items-center p-2 mb-2 rounded shadow bg-white transition-shadow ${
+                            snapshot.isDragging ? "shadow-md" : ""
+                          }`}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 20 }}
+                          layout
+                        >
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`todo-${todo.id}`}
+                              checked={todo.isCompleted}
+                              onCheckedChange={() => toggleTodo(todo.id)}
+                            />
+                            <label
+                              htmlFor={`todo-${todo.id}`}
+                              className={`max-w-[200px] break-words ${
+                                todo.isCompleted
+                                  ? "line-through text-gray-500"
+                                  : ""
+                              }`}
+                            >
+                              {todo.title}
+                            </label>
+                          </div>
+                          <button
+                            onClick={() => removeTodo(todo.id)}
+                            className="text-primary-custom hover:text-primary-custom/90 focus:outline-none"
+                          >
+                            ✕
+                          </button>
+                        </motion.li>
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+              </AnimatePresence>
               {provided.placeholder}
             </ul>
           )}
