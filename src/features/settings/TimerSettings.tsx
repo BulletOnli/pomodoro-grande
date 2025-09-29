@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
 import { useTimer } from "@/context/TimerContext";
+import { CustomSelectInput } from "@/components/ui/select-input";
 
 const DEFAULT_WORK_TIME = WORKING_OPTIONS[3];
 const DEFAULT_BREAK_TIME = BREAK_OPTIONS[1];
@@ -102,58 +103,40 @@ const TimerSettings = () => {
 
   return (
     <div className="w-full space-y-3">
-      {/* <h1 className="text-base text-center font-semibold mb-2">
-        Timer Settings
-      </h1> */}
-
       <div className="flex items-center justify-between">
         <p>Work</p>
-
-        <Select
+        <CustomSelectInput
           disabled={isRunning || ultraFocusMode}
           value={time}
           onValueChange={handleWorkTimeChange}
-          defaultValue={time}
-        >
-          <SelectTrigger className="w-[180px] h-8">
-            <SelectValue placeholder="Select time" />
-          </SelectTrigger>
-          <SelectContent>
-            {WORKING_OPTIONS.map((option) => {
-              const value = Number(option) / ONE_MINUTE;
-              return (
-                <SelectItem key={option} value={option}>
-                  {value} {value > 1 ? "minutes" : "minute"}
-                </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
+          options={WORKING_OPTIONS.map((option) => ({
+            value: option,
+            label: `${Number(option) / ONE_MINUTE} ${
+              Number(option) / ONE_MINUTE > 1 ? "minutes" : "minute"
+            }`,
+          }))}
+          placeholder="Select time"
+          className="w-[180px] h-8"
+          max={Number(WORKING_OPTIONS[WORKING_OPTIONS.length - 1]) / ONE_MINUTE}
+        />
       </div>
 
       <div className="flex items-center justify-between">
         <p>Short Break</p>
-
-        <Select
+        <CustomSelectInput
           disabled={isRunning || ultraFocusMode}
           value={breakTime}
           onValueChange={handleBreakTimeChange}
-          defaultValue={breakTime}
-        >
-          <SelectTrigger className="w-[180px] h-8">
-            <SelectValue placeholder="Select time" />
-          </SelectTrigger>
-          <SelectContent>
-            {BREAK_OPTIONS.map((option) => {
-              const value = Number(option) / ONE_MINUTE;
-              return (
-                <SelectItem key={option} value={option}>
-                  {value} {value > 1 ? "minutes" : "minute"}
-                </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
+          options={BREAK_OPTIONS.map((option) => ({
+            value: option,
+            label: `${Number(option) / ONE_MINUTE} ${
+              Number(option) / ONE_MINUTE > 1 ? "minutes" : "minute"
+            }`,
+          }))}
+          placeholder="Select time"
+          className="w-[180px] h-8"
+          max={Number(BREAK_OPTIONS[BREAK_OPTIONS.length - 1]) / ONE_MINUTE}
+        />
       </div>
 
       <div className="flex items-center justify-between">
@@ -171,26 +154,23 @@ const TimerSettings = () => {
           </TooltipProvider>
         </div>
 
-        <Select
+        <CustomSelectInput
           disabled={isRunning || ultraFocusMode}
           value={longBreak}
           onValueChange={handleLongBreakChange}
-          defaultValue={longBreak}
-        >
-          <SelectTrigger className="w-[180px] h-8">
-            <SelectValue placeholder="Select time" />
-          </SelectTrigger>
-          <SelectContent>
-            {LONG_BREAK_OPTIONS.map((option) => {
-              const value = Number(option) / ONE_MINUTE;
-              return (
-                <SelectItem key={option} value={option}>
-                  {value} {value > 1 ? "minutes" : "minute"}
-                </SelectItem>
-              );
-            })}
-          </SelectContent>
-        </Select>
+          options={LONG_BREAK_OPTIONS.map((option) => ({
+            value: option,
+            label: `${Number(option) / ONE_MINUTE} ${
+              Number(option) / ONE_MINUTE > 1 ? "minutes" : "minute"
+            }`,
+          }))}
+          placeholder="Select time"
+          className="w-[180px] h-8"
+          max={
+            Number(LONG_BREAK_OPTIONS[LONG_BREAK_OPTIONS.length - 1]) /
+            ONE_MINUTE
+          }
+        />
       </div>
 
       <div className="flex items-center gap-2">
