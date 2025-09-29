@@ -95,15 +95,16 @@ chrome.storage.local.get(
   (result) => updateVariables(result as StorageChanges)
 );
 
-chrome.runtime.onStartup.addListener(() => {
-  chrome.storage.local.get(["isAutoStartEnabled"], async (result) => {
+chrome.runtime.onStartup.addListener(async () => {
+  stopTimer(); // to reset everything on browser startup
+
+  chrome.storage.local.get(["isAutoStartEnabled"], (result) => {
     isAutoStartEnabled = result.isAutoStartEnabled ?? false;
 
     if (isAutoStartEnabled) {
       startTimer().catch(console.error);
-      await playMusic();
     } else {
-      stopTimer();
+      stopTimer().catch(console.error);
     }
   });
 });
