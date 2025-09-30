@@ -14,7 +14,7 @@ import { useTimer } from "@/context/TimerContext";
 const BackgroundMusicSettings = () => {
   const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [selectedMusic, setSelectedMusic] = useState(BackgroundMusics[0].value);
-  const [musicVolume, setMusicVolume] = useState(0.5);
+  const [musicVolume, setMusicVolume] = useState(0.3);
   const { isRunning, isBreak } = useTimer();
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -128,7 +128,7 @@ const BackgroundMusicSettings = () => {
           <SelectTrigger className="w-[180px] h-8">
             <SelectValue placeholder="Select a sound" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-80 overflow-y-auto">
             {BackgroundMusics.map((sound) => (
               <SelectItem key={sound.value} value={sound.value}>
                 {sound.label}
