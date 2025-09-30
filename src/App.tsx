@@ -4,6 +4,7 @@ import Settings from "./features/settings/Settings";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import PomodoroTimer from "./features/pomodoro/PomodoroTimer";
 import { useState } from "react";
+import UpdateNotification from "./components/common/UpdateNotification";
 import Todos from "./features/todos/Todos";
 import SiteBlocker from "./features/site-blocker/SiteBlocker";
 import AnalyticsTab from "./features/analytics/AnalyticsTab";
@@ -28,31 +29,35 @@ const App = () => {
   };
 
   return (
-    <Tabs
-      defaultValue="timer"
-      onValueChange={handleTabResize}
-      className={`${tabSize.width} ${tabSize.height} relative flex flex-col mx-auto text-sm border transition-all duration-300`}
-    >
-      <Header />
+    <>
+      <UpdateNotification />
 
-      <div className="w-full h-full px-4">
-        <PomodoroTimer />
-        <TabsContent value="sites">
-          <SiteBlocker />
-        </TabsContent>
-        <TabsContent value="settings">
-          <Settings />
-        </TabsContent>
-        <TabsContent value="todos">
-          <Todos />
-        </TabsContent>
-        <TabsContent value="analytics">
-          <AnalyticsTab />
-        </TabsContent>
-      </div>
+      <Tabs
+        defaultValue="timer"
+        onValueChange={handleTabResize}
+        className={`${tabSize.width} ${tabSize.height} relative flex flex-col mx-auto text-sm border transition-all duration-300`}
+      >
+        <Header />
 
-      <Navbar />
-    </Tabs>
+        <div className="w-full h-full px-4">
+          <PomodoroTimer />
+          <TabsContent value="sites">
+            <SiteBlocker />
+          </TabsContent>
+          <TabsContent value="settings">
+            <Settings />
+          </TabsContent>
+          <TabsContent value="todos">
+            <Todos />
+          </TabsContent>
+          <TabsContent value="analytics">
+            <AnalyticsTab />
+          </TabsContent>
+        </div>
+
+        <Navbar />
+      </Tabs>
+    </>
   );
 };
 
