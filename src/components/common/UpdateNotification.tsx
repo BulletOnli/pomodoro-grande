@@ -1,24 +1,45 @@
 import { APP_VERSION } from "@/constants";
 import { X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
-const DEFAULT_DURATION = 5000;
 const APPEAR_DELAY = 1500;
+const AUTO_DISMISS = 5000;
 
 const UpdateNotification = () => {
   const [visible, setVisible] = useState(false);
+  const appearTimer = useRef<NodeJS.Timeout | null>(null);
+  const autoDismissTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const appearTimer = setTimeout(() => setVisible(true), APPEAR_DELAY);
-    return () => clearTimeout(appearTimer);
+    chrome.storage.local.get("isUpdateNotificationVisible", (data) => {
+      // If undefined or true, show notification
+      const shouldShow = data.isUpdateNotificationVisible !== false;
+      if (shouldShow) {
+        appearTimer.current = setTimeout(() => setVisible(true), APPEAR_DELAY);
+      }
+    });
+    return () => {
+      if (appearTimer.current) clearTimeout(appearTimer.current);
+      if (autoDismissTimer.current) clearTimeout(autoDismissTimer.current);
+    };
   }, []);
 
   useEffect(() => {
     if (visible) {
-      const hideTimer = setTimeout(() => setVisible(false), DEFAULT_DURATION);
-      return () => clearTimeout(hideTimer);
+      autoDismissTimer.current = setTimeout(() => {
+        setVisible(false);
+        chrome.storage.local.set({ isUpdateNotificationVisible: false });
+      }, AUTO_DISMISS);
     }
+    return () => {
+      if (autoDismissTimer.current) clearTimeout(autoDismissTimer.current);
+    };
   }, [visible]);
+
+  const handleClose = () => {
+    setVisible(false);
+    chrome.storage.local.set({ isUpdateNotificationVisible: false });
+  };
 
   if (!visible) return null;
 
@@ -28,10 +49,9 @@ const UpdateNotification = () => {
         <p className="font-medium text-sm">✨ {APP_VERSION} is here!</p>
         <p className="text-xs max-w-[90%]">Enjoy new enhancements and fixes.</p>
       </div>
-
       <button
         className="px-2 py-1 text-xs text-white"
-        onClick={() => setVisible(false)}
+        onClick={handleClose}
         aria-label="Dismiss update notification"
       >
         <X className="size-4" />

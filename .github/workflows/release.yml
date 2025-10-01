@@ -36,15 +36,13 @@ jobs:
         run: |
           VERSION="${GITHUB_REF#refs/tags/}"
           cat <<EOF > RELEASE_NOTES.md
-          # 🚀 Release Notes - $VERSION
-
-          ## ✨ Features
+          ### ✨ What's New
           - 
 
-          ## 🛠 Refactor
+          ### 🛠 Refactor
           - 
 
-          ## 🐞 Fixes
+          ### 🐞 Fixes
           - 
             
           EOF

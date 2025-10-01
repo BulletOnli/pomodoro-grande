@@ -7,30 +7,25 @@ export default [
   {
     label: "Notification 2",
     value:
-      "https://res.cloudinary.com/dar5mfo5u/video/upload/v1759214325/pomodoro%20grande/notifcations/v2.5.1/notification-beep-229154_kij4oi.mp3",
+      "https://res.cloudinary.com/dar5mfo5u/video/upload/v1759214319/pomodoro%20grande/notifcations/v2.5.1/new-notification-017-352293_nefgn3.mp3",
   },
   {
     label: "Notification 3",
     value:
-      "https://res.cloudinary.com/dar5mfo5u/video/upload/v1759214319/pomodoro%20grande/notifcations/v2.5.1/new-notification-017-352293_nefgn3.mp3",
+      "https://res.cloudinary.com/dar5mfo5u/video/upload/v1759214317/pomodoro%20grande/notifcations/v2.5.1/new-notification-09-352705_lfyhoq.mp3",
   },
   {
     label: "Notification 4",
     value:
-      "https://res.cloudinary.com/dar5mfo5u/video/upload/v1759214317/pomodoro%20grande/notifcations/v2.5.1/new-notification-09-352705_lfyhoq.mp3",
+      "https://res.cloudinary.com/dar5mfo5u/video/upload/v1759214315/pomodoro%20grande/notifcations/v2.5.1/new-notification-08-352461_mdfl5b.mp3",
   },
   {
     label: "Notification 5",
     value:
-      "https://res.cloudinary.com/dar5mfo5u/video/upload/v1759214315/pomodoro%20grande/notifcations/v2.5.1/new-notification-08-352461_mdfl5b.mp3",
-  },
-  {
-    label: "Notification 6",
-    value:
       "https://res.cloudinary.com/dar5mfo5u/video/upload/v1759214314/pomodoro%20grande/notifcations/v2.5.1/new-notification-05-352453_csjsx1.mp3",
   },
   {
-    label: "Notification 7",
+    label: "Notification 6",
     value:
       "https://res.cloudinary.com/dar5mfo5u/video/upload/v1759214297/pomodoro%20grande/notifcations/v2.5.1/ringtone-132673_qqw52j.mp3",
   },

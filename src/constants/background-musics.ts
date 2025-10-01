@@ -35,15 +35,20 @@ export default [
   //   label: "Deep Focus",
   //   value: "https://res.cloudinary.com/dar5mfo5u/video/upload/v1740322667/pomodoro%20grande/bg-music/deep-focus-chill_background.mp3",
   // },
-  {
-    label: "Lofi Beat",
-    value:
-      "https://res.cloudinary.com/dar5mfo5u/video/upload/v1759214345/pomodoro%20grande/bg-music/2/lo-fi-alarm-clock-243766_hnzfyi.mp3",
-  },
+  // {
+  //   label: "Lofi Beat",
+  //   value:
+  //     "https://res.cloudinary.com/dar5mfo5u/video/upload/v1759214345/pomodoro%20grande/bg-music/2/lo-fi-alarm-clock-243766_hnzfyi.mp3",
+  // },
   {
     label: "Good Night Lofi Cozy",
     value:
       "https://res.cloudinary.com/dar5mfo5u/video/upload/v1740322685/pomodoro%20grande/bg-music/good-night-lofi-cozy-chill-music-FASSounds.mp3",
+  },
+  {
+    label: "Cozy Pub",
+    value:
+      "https://res.cloudinary.com/dar5mfo5u/video/upload/v1759214344/pomodoro%20grande/bg-music/2/ambient-pub-6696_nr4nx0.mp3",
   },
   {
     label: "Jungle Hills",
@@ -64,10 +69,5 @@ export default [
     label: "Ocean Waves",
     value:
       "https://res.cloudinary.com/dar5mfo5u/video/upload/v1759215821/pomodoro%20grande/bg-music/2/ocean-waves-376898_lppvkz.mp3",
-  },
-  {
-    label: "Cozy Pub",
-    value:
-      "https://res.cloudinary.com/dar5mfo5u/video/upload/v1759214344/pomodoro%20grande/bg-music/2/ambient-pub-6696_nr4nx0.mp3",
   },
 ];
