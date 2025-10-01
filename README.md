@@ -2,15 +2,17 @@
 
 I explored several Pomodoro extensions on the Chrome Web Store but found some inconveniences in all of them. I also went through user reviews to identify the features people felt were missing in these extensions.
 
-This inspired me to create my own extension, [**Pomodoro Grande**](https://chromewebstore.google.com/detail/pomodoro-grande/hmkklgcpkihbecjbohepediganhefdof). It combines the classic Pomodoro Technique with powerful productivity tools to help you stay focused and efficient. Key features include:
+This inspired me to create my own extension, [**Pomodoro Grande**](https://chromewebstore.google.com/detail/pomodoro-grande/hmkklgcpkihbecjbohepediganhefdof). It combines the classic Pomodoro Technique with powerful productivity tools to help you stay focused and efficient.
 
 ### 🎵 Why You'll Love It
 
 - Built-in Background Music – Stay in the zone with focus-friendly sounds.
 - Customizable Pomodoro Timer – Set work/break intervals that fit your workflow.
+- Pause & Resume Timer – Never lose progress when interrupted.
+- Auto-Start Sessions – Timer automatically starts on browser startup
 - Ultra Focus Mode – Block distractions for deep work sessions.
 - Website Blocker – Prevent time-wasting sites with domain & subdomain filtering.
-- To-Do List Integration – Organize your tasks without leaving your browser.
+- To-Do List Integration – Plan and organize tasks effortlessly without switching tabs.
 
 ### 🚀 Smarter Features for Better Productivity
 
