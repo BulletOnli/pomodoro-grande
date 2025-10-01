@@ -13,11 +13,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Todo } from "@/types";
+import { Pencil, X } from "lucide-react";
 
 const Todos = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
 
   useEffect(() => {
     chrome.storage.local.get("todos").then((result) => {
@@ -45,6 +48,31 @@ const Todos = () => {
     const updatedTodos = todos.filter((todo) => todo.id !== id);
     setTodos(updatedTodos);
     chrome.storage.local.set({ todos: updatedTodos });
+  };
+
+  const startEdit = (id: string, currentTitle: string) => {
+    setEditingId(id);
+    setEditValue(currentTitle);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditValue("");
+  };
+
+  const saveEdit = (id: string) => {
+    if (editValue.trim() === "") {
+      setError("Task cannot be empty");
+      return;
+    }
+    const updatedTodos = todos.map((todo) =>
+      todo.id === id ? { ...todo, title: editValue } : todo
+    );
+    setTodos(updatedTodos);
+    chrome.storage.local.set({ todos: updatedTodos });
+    setEditingId(null);
+    setEditValue("");
+    setError("");
   };
 
   const toggleTodo = (id: string) => {
@@ -123,21 +151,56 @@ const Todos = () => {
                           checked={todo.isCompleted}
                           onCheckedChange={() => toggleTodo(todo.id)}
                         />
-                        <label
-                          htmlFor={`todo-${todo.id}`}
-                          className={`max-w-[200px] break-words ${
-                            todo.isCompleted ? "line-through text-gray-500" : ""
-                          }`}
-                        >
-                          {todo.title}
-                        </label>
+                        {editingId === todo.id ? (
+                          <input
+                            className="max-w-[200px] break-words border rounded px-1 py-0.5 text-sm focus:outline-none"
+                            value={editValue}
+                            autoFocus
+                            onChange={(e) => setEditValue(e.target.value)}
+                            onBlur={() => saveEdit(todo.id)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                saveEdit(todo.id);
+                              } else if (e.key === "Escape") {
+                                cancelEdit();
+                              }
+                            }}
+                          />
+                        ) : (
+                          <label
+                            htmlFor={`todo-${todo.id}`}
+                            className={`max-w-[200px] break-words ${
+                              todo.isCompleted
+                                ? "line-through text-gray-500"
+                                : ""
+                            }`}
+                          >
+                            {todo.title}
+                          </label>
+                        )}
                       </div>
-                      <button
-                        onClick={() => removeTodo(todo.id)}
-                        className="text-primary-custom hover:text-primary-custom/90 focus:outline-none"
-                      >
-                        ✕
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() =>
+                            editingId === todo.id
+                              ? cancelEdit()
+                              : startEdit(todo.id, todo.title)
+                          }
+                          className="text-gray-400 hover:text-gray-600 focus:outline-none mr-1"
+                          title="Edit"
+                          tabIndex={-1}
+                        >
+                          <Pencil className="size-3.5" />
+                        </button>
+                        <button
+                          onClick={() => removeTodo(todo.id)}
+                          className="text-primary-custom hover:text-primary-custom/90 focus:outline-none"
+                          title="Delete"
+                        >
+                          <X className="size-4" />
+                        </button>
+                      </div>
                     </li>
                   )}
                 </Draggable>

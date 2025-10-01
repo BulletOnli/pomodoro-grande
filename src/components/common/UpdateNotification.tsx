@@ -23,14 +23,14 @@ const UpdateNotification = () => {
   if (!visible) return null;
 
   return (
-    <div className="fixed w-[90%] top-6 left-1/2 -translate-x-1/2 z-50 bg-white border border-gray-200 shadow-lg rounded-md px-4 py-2 flex items-center gap-2 animate-fade-in transition-all">
+    <div className="fixed w-[90%] top-6 left-1/2 -translate-x-1/2 z-50 border-gray-200 text-white bg-primary-custom/80 backdrop-blur-sm shadow-lg rounded-lg px-4 py-2 flex items-center gap-2 animate-fade-in transition-all">
       <div className="flex-1 flex flex-col gap-1">
-        <p className="font-semibold text-sm">✨ {APP_VERSION} is here!</p>
+        <p className="font-medium text-sm">✨ {APP_VERSION} is here!</p>
         <p className="text-xs max-w-[90%]">Enjoy new enhancements and fixes.</p>
       </div>
 
       <button
-        className="px-2 py-1 text-xs text-primary-custom/80 hover:text-primary-custom"
+        className="px-2 py-1 text-xs text-white"
         onClick={() => setVisible(false)}
         aria-label="Dismiss update notification"
       >
