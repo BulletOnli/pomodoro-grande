@@ -23,6 +23,11 @@ const App = () => {
         width: "w-[550px]",
         height: DEFAULT_TAB_SIZE.height,
       });
+    } else if (value === "settings") {
+      setTabSize({
+        width: DEFAULT_TAB_SIZE.width,
+        height: "h-[570px]",
+      });
     } else {
       setTabSize(DEFAULT_TAB_SIZE);
     }

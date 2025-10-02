@@ -96,22 +96,37 @@ chrome.storage.local.get(
 );
 
 chrome.runtime.onStartup.addListener(async () => {
-  stopTimer(); // to reset everything on browser startup
+  stopTimer();
 
-  chrome.storage.local.get(["isAutoStartEnabled"], (result) => {
-    isAutoStartEnabled = result.isAutoStartEnabled ?? false;
-
-    if (isAutoStartEnabled) {
-      startTimer().catch(console.error);
-    } else {
-      stopTimer().catch(console.error);
+  chrome.storage.sync.get(
+    ["badgeColor", "badgeFontColor", "isAutoStartEnabled"],
+    (result) => {
+      if (result.badgeColor) {
+        setBadgeBackgroundColor(result.badgeColor);
+      }
+      if (result.badgeFontColor) {
+        setBadgeFontColor(result.badgeFontColor);
+      }
+      isAutoStartEnabled = result.isAutoStartEnabled ?? false;
+      if (isAutoStartEnabled) {
+        startTimer().catch(console.error);
+      } else {
+        stopTimer().catch(console.error);
+      }
     }
-  });
+  );
 });
 
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.action.setBadgeBackgroundColor({ color: "#40A662" });
+  chrome.storage.sync.get(["badgeColor", "badgeFontColor"], (result) => {
+    setBadgeBackgroundColor(result.badgeColor || "#40A662");
+    if (result.badgeFontColor) {
+      setBadgeFontColor(result.badgeFontColor);
+    }
+  });
+
   updateBadge(time);
+
   chrome.storage.local.set({
     time,
     workTime: WORK_TIME,
@@ -137,7 +152,28 @@ chrome.runtime.onMessage.addListener((message) => {
   if (message.type === "skip-timer") {
     skipTimer();
   }
+
+  if (message.type === "set-badge-color" && typeof message.color === "string") {
+    setBadgeBackgroundColor(message.color);
+  }
+
+  if (
+    message.type === "set-badge-font-color" &&
+    typeof message.color === "string"
+  ) {
+    setBadgeFontColor(message.color);
+  }
 });
+
+const setBadgeFontColor = (color: string) => {
+  if (chrome.action.setBadgeTextColor) {
+    chrome.action.setBadgeTextColor({ color });
+  }
+};
+
+const setBadgeBackgroundColor = (color: string) => {
+  chrome.action.setBadgeBackgroundColor({ color });
+};
 
 chrome.storage.onChanged.addListener((changes) => {
   const newChanges: StorageChanges = Object.fromEntries(

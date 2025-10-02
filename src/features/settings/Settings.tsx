@@ -1,6 +1,7 @@
 import TimerSettings from "./TimerSettings";
 import SoundSettings from "./SoundSettings";
 import NotificationSettings from "./NotificationSettings";
+import AppearanceSettings from "./AppearanceSettings";
 import {
   ArrowLeft,
   Bell,
@@ -44,6 +45,7 @@ const SettingsPage = () => {
         </div>
 
         {currentSection === "Timer Settings" && <TimerSettings />}
+        {currentSection === "Appearance" && <AppearanceSettings />}
         {currentSection === "Sounds and Notifications" && (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
@@ -70,7 +72,7 @@ const SettingsPage = () => {
   }
 
   return (
-    <div className="w-full space-y-2">
+    <div className="w-full space-y-2 pb-4">
       <h1 className="text-base text-center font-semibold mb-2">
         General Settings
       </h1>
@@ -93,6 +95,12 @@ const SettingsPage = () => {
           title="Background Music"
           subtitle="Play music while you work"
           onClick={() => setCurrentSection("Background Music")}
+        />
+        <MenuItem
+          icon={<Hammer className="size-5" />}
+          title="Appearance"
+          subtitle="Customize badge and UI colors"
+          onClick={() => setCurrentSection("Appearance")}
         />
       </div>
 
