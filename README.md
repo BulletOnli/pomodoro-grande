@@ -1,24 +1,23 @@
 # **Pomodoro Grande**: Advanced Pomodoro Timer!
 
-I explored several Pomodoro extensions on the Chrome Web Store but found some inconveniences in all of them. I also went through user reviews to identify the features people felt were missing in these extensions.
-
-This inspired me to create my own extension, [**Pomodoro Grande**](https://chromewebstore.google.com/detail/pomodoro-grande/hmkklgcpkihbecjbohepediganhefdof). It combines the classic Pomodoro Technique with powerful productivity tools to help you stay focused and efficient.
+I explored several Pomodoro extensions on the Chrome Web Store but found some inconveniences in all of them. I also went through user reviews to identify the features people felt were missing in these extensions. This inspired me to create my own extension, [**Pomodoro Grande**](https://chromewebstore.google.com/detail/pomodoro-grande/hmkklgcpkihbecjbohepediganhefdof). It combines the classic Pomodoro Technique with powerful productivity tools to help you stay focused and efficient.
 
 ### 🎵 Why You'll Love It
 
-- Built-in Background Music – Stay in the zone with focus-friendly sounds.
-- Customizable Pomodoro Timer – Set work/break intervals that fit your workflow.
-- Pause & Resume Timer – Never lose progress when interrupted.
-- Auto-Start Sessions – Timer automatically starts on browser startup
-- Ultra Focus Mode – Block distractions for deep work sessions.
-- Website Blocker – Prevent time-wasting sites with domain & subdomain filtering.
-- To-Do List Integration – Plan and organize tasks effortlessly without switching tabs.
+- **Built-in Background Music** – Stay in the zone with focus-friendly sounds.
+- **Customizable Pomodoro Timer** – Set work/break intervals that fit your workflow.
+- **Pause & Resume Timer** – Pick up right where you left off.
+- **Auto-Start Sessions** – Start your timer automatically when you open your browser.
+- **Ultra Focus Mode** – Block distractions for deep work sessions.
+- **Website Blocker** – Filter domains and subdomains to prevent time-wasting sites.
+- **To-Do List Integration** – Organize tasks with drag-and-drop without leaving your browser.
+- **Today's Hourly Analytics** – View your productivity breakdown by the hour.
+- **Quick Break Skip** – Stay flexible with one-click break skipping.
+- **Custom notifications** – Choose alert sounds or go silent.
+- **Session analytics** – Track your focus performance over time.
+- **Customizable Badge** – Personalize your extension badge color.
 
-### 🚀 Smarter Features for Better Productivity
-
-- Quick break-skip for flexibility.
-- Custom notifications – Choose alert sounds or go silent.
-- Session analytics – Track your focus performance.
+Pomodoro Grande combines all the tools you need to focus, manage tasks, and block distractions in one powerful extension.
 
 ### 🔒 Privacy First – No Data Collection
 
