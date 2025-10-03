@@ -66,28 +66,26 @@ const AppearanceSettings = () => {
     loadSettings();
   }, []);
 
-  const debouncedSetBadgeColor = debounce((value: string) => {
-    chrome.storage.sync.set({ badgeColor: value });
-    chrome.runtime.sendMessage({ type: "set-badge-color", color: value });
-  }, 500);
-
   const handleBadgeColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setBadgeColor(value);
-    debouncedSetBadgeColor(value);
+    chrome.runtime.sendMessage({ type: "set-badge-color", color: value });
   };
 
-  const debouncedSetBadgeFontColor = debounce((value: string) => {
-    chrome.storage.sync.set({ badgeFontColor: value });
-    chrome.runtime.sendMessage({ type: "set-badge-font-color", color: value });
-  }, 500);
+  const handleBadgeColorBlur = () => {
+    chrome.storage.sync.set({ badgeColor });
+  };
 
   const handleBadgeFontColorChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const value = e.target.value;
     setBadgeFontColor(value);
-    debouncedSetBadgeFontColor(value);
+    chrome.runtime.sendMessage({ type: "set-badge-font-color", color: value });
+  };
+
+  const handleBadgeFontColorBlur = () => {
+    chrome.storage.sync.set({ badgeFontColor });
   };
 
   return (
@@ -110,6 +108,7 @@ const AppearanceSettings = () => {
           type="color"
           value={badgeColor}
           onChange={handleBadgeColorChange}
+          onBlur={handleBadgeColorBlur}
           className="p-0 border-none bg-transparent cursor-pointer"
           aria-label="Badge Color Picker"
         />
@@ -132,6 +131,7 @@ const AppearanceSettings = () => {
           type="color"
           value={badgeFontColor}
           onChange={handleBadgeFontColorChange}
+          onBlur={handleBadgeFontColorBlur}
           className="p-0 border-none bg-transparent cursor-pointer"
           aria-label="Badge Font Color Picker"
         />
