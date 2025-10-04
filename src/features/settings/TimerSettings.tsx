@@ -42,13 +42,14 @@ const TimerSettings = () => {
         "breakTime",
         "longBreak",
         "workTime",
-        "isAutoStartEnabled",
       ]);
 
       setTime(data?.workTime?.toString() ?? DEFAULT_WORK_TIME);
       setBreakTime(data?.breakTime?.toString() ?? DEFAULT_BREAK_TIME);
       setLongBreak(data?.longBreak?.toString() ?? DEFAULT_LONG_BREAK_TIME);
-      setIsAutoStartEnabled(data?.isAutoStartEnabled ?? false);
+
+      const data2 = await chrome.storage.sync.get(["isAutoStartEnabled"]);
+      setIsAutoStartEnabled(data2?.isAutoStartEnabled ?? false);
     };
 
     loadSettings();
@@ -88,7 +89,7 @@ const TimerSettings = () => {
 
   const handleAutoStartChange = (value: boolean) => {
     setIsAutoStartEnabled(value);
-    chrome.storage.local.set({ isAutoStartEnabled: value });
+    chrome.storage.sync.set({ isAutoStartEnabled: value });
   };
 
   const formatSelectTime = (value: number) => {

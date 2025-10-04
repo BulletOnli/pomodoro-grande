@@ -23,7 +23,6 @@ let isRunning = false;
 let isBreak = false;
 let ultraFocusMode = false;
 let isPaused = false;
-let isAutoStartEnabled = false;
 
 let interval: NodeJS.Timeout | undefined;
 let time = WORK_TIME;
@@ -62,9 +61,6 @@ const updateVariables = (changes: StorageChanges): void => {
   if (changes.ultraFocusMode !== undefined) {
     ultraFocusMode = changes.ultraFocusMode;
   }
-  if (changes.isAutoStartEnabled !== undefined) {
-    isAutoStartEnabled = changes.isAutoStartEnabled;
-  }
 
   // Music settings
   if (changes.selectedMusic) selectedMusic = changes.selectedMusic;
@@ -80,7 +76,6 @@ chrome.storage.local.get(
     "workTime",
     "isRunning",
     "isPaused",
-    "isAutoStartEnabled",
     "breakTime",
     "selectedSound",
     "isSoundEnabled",
@@ -107,7 +102,7 @@ chrome.runtime.onStartup.addListener(async () => {
       if (result.badgeFontColor) {
         setBadgeFontColor(result.badgeFontColor);
       }
-      isAutoStartEnabled = result.isAutoStartEnabled ?? false;
+      const isAutoStartEnabled = result.isAutoStartEnabled ?? false;
       if (isAutoStartEnabled) {
         startTimer().catch(console.error);
       } else {
@@ -166,9 +161,7 @@ chrome.runtime.onMessage.addListener((message) => {
 });
 
 const setBadgeFontColor = (color: string) => {
-  if (chrome.action.setBadgeTextColor) {
-    chrome.action.setBadgeTextColor({ color });
-  }
+  chrome.action.setBadgeTextColor({ color });
 };
 
 const setBadgeBackgroundColor = (color: string) => {
