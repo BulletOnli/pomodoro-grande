@@ -92,33 +92,20 @@ chrome.storage.local.get(
 
 chrome.runtime.onStartup.addListener(async () => {
   stopTimer();
+  syncBadgeColors();
 
-  chrome.storage.sync.get(
-    ["badgeColor", "badgeFontColor", "isAutoStartEnabled"],
-    (result) => {
-      if (result.badgeColor) {
-        setBadgeBackgroundColor(result.badgeColor);
-      }
-      if (result.badgeFontColor) {
-        setBadgeFontColor(result.badgeFontColor);
-      }
-      const isAutoStartEnabled = result.isAutoStartEnabled ?? false;
-      if (isAutoStartEnabled) {
-        startTimer().catch(console.error);
-      } else {
-        stopTimer().catch(console.error);
-      }
+  chrome.storage.sync.get(["isAutoStartEnabled"], (result) => {
+    const isAutoStartEnabled = result.isAutoStartEnabled ?? false;
+    if (isAutoStartEnabled) {
+      startTimer().catch(console.error);
+    } else {
+      stopTimer().catch(console.error);
     }
-  );
+  });
 });
 
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.get(["badgeColor", "badgeFontColor"], (result) => {
-    setBadgeBackgroundColor(result.badgeColor || "#40A662");
-    if (result.badgeFontColor) {
-      setBadgeFontColor(result.badgeFontColor);
-    }
-  });
+  syncBadgeColors();
 
   updateBadge(time);
 
@@ -149,23 +136,25 @@ chrome.runtime.onMessage.addListener((message) => {
   }
 
   if (message.type === "set-badge-color" && typeof message.color === "string") {
-    setBadgeBackgroundColor(message.color);
+    chrome.action.setBadgeBackgroundColor({ color: message.color });
   }
 
   if (
     message.type === "set-badge-font-color" &&
     typeof message.color === "string"
   ) {
-    setBadgeFontColor(message.color);
+    chrome.action.setBadgeTextColor({ color: message.color });
   }
 });
 
-const setBadgeFontColor = (color: string) => {
-  chrome.action.setBadgeTextColor({ color });
-};
+const syncBadgeColors = () => {
+  chrome.storage.sync.get(["badgeColor", "badgeFontColor"], (result) => {
+    const badgeColor = isBreak ? "#ffccd5" : result.badgeColor || "#40A662";
+    chrome.action.setBadgeBackgroundColor({ color: badgeColor });
 
-const setBadgeBackgroundColor = (color: string) => {
-  chrome.action.setBadgeBackgroundColor({ color });
+    const badgeFontColor = result.badgeFontColor || "#000000";
+    chrome.action.setBadgeTextColor({ color: badgeFontColor });
+  });
 };
 
 chrome.storage.onChanged.addListener((changes) => {
@@ -261,7 +250,7 @@ const stopTimer = async (): Promise<void> => {
 
   completedTodos = [];
   pomodoroCount = 0;
-  chrome.action.setBadgeBackgroundColor({ color: "#40A662" });
+  syncBadgeColors();
   updateBadge(time);
   unBlockAllSites();
 };
@@ -318,8 +307,8 @@ export const handleTimeEnds = async (): Promise<void> => {
 
   chrome.storage.local.set({ isBreak, time, isLongBreak, isPaused });
   chrome.storage.session.set({ pomodoroCount });
-  const badgeColor = isBreak ? "#ffccd5" : "#40A662";
-  chrome.action.setBadgeBackgroundColor({ color: badgeColor });
+
+  syncBadgeColors();
 };
 
 const ensureOffscreenDocument = async (): Promise<void> => {
