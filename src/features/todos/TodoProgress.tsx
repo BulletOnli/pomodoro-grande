@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 
 const TodoProgress = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const completedTodos = todos.filter((todo) => todo.isCompleted);
+  const completedTodos = todos.filter(
+    (todo) => todo.status === "done" || (todo as any).isCompleted
+  );
 
   useEffect(() => {
     const syncState = async () => {

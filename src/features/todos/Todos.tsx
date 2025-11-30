@@ -11,9 +11,8 @@ import {
 } from "@hello-pangea/dnd";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Todo } from "@/types";
-import { Pencil, X } from "lucide-react";
+import { Todo, TodoStatus } from "@/types";
+import { Pencil, X, Plus } from "lucide-react";
 
 const Todos = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -24,7 +23,13 @@ const Todos = () => {
 
   useEffect(() => {
     chrome.storage.local.get("todos").then((result) => {
-      if (result.todos) setTodos(result.todos as Todo[]);
+      if (result.todos) {
+        const loadedTodos = result.todos.map((t: any) => ({
+          ...t,
+          status: t.status || (t.isCompleted ? "done" : "todo"),
+        }));
+        setTodos(loadedTodos);
+      }
     });
   }, []);
 
@@ -32,10 +37,10 @@ const Todos = () => {
     e.preventDefault();
     if (inputValue.trim() === "") return;
 
-    const newTodo = {
+    const newTodo: Todo = {
       id: Math.floor(Math.random() * 10_000).toString(),
       title: inputValue,
-      isCompleted: false,
+      status: "todo",
     };
     const updatedTodos = [newTodo, ...todos];
     setTodos(updatedTodos);
@@ -75,140 +80,187 @@ const Todos = () => {
     setError("");
   };
 
-  const toggleTodo = (id: string) => {
-    const updatedTodos = todos.map((todo) =>
-      todo.id === id ? { ...todo, isCompleted: !todo.isCompleted } : todo
-    );
-    setTodos(updatedTodos);
-    chrome.storage.local.set({ todos: updatedTodos });
+  const onDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+    if (!destination) return;
+
+    const sourceStatus = source.droppableId as TodoStatus;
+    const destStatus = destination.droppableId as TodoStatus;
+
+    const columns = {
+      todo: todos.filter((t) => t.status === "todo"),
+      "in-progress": todos.filter((t) => t.status === "in-progress"),
+      done: todos.filter((t) => t.status === "done"),
+    };
+
+    const [movedItem] = columns[sourceStatus].splice(source.index, 1);
+    movedItem.status = destStatus;
+    columns[destStatus].splice(destination.index, 0, movedItem);
+
+    const newTodos = [
+      ...columns.todo,
+      ...columns["in-progress"],
+      ...columns.done,
+    ];
+
+    setTodos(newTodos);
+    chrome.storage.local.set({ todos: newTodos });
   };
 
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
-    const reordered = Array.from(todos);
-    const [removed] = reordered.splice(result.source.index, 1);
-    reordered.splice(result.destination.index, 0, removed);
-    setTodos(reordered);
-    chrome.storage.local.set({ todos: reordered });
-  };
+  const columns: { id: TodoStatus; title: string }[] = [
+    { id: "todo", title: "To Do" },
+    { id: "in-progress", title: "In Progress" },
+    { id: "done", title: "Done" },
+  ];
 
   return (
-    <div className="w-full space-y-2">
-      <div className="">
-        <h1 className="text-base text-center font-semibold">Todos</h1>
-        <p className="text-xs text-center text-gray-500 ">
-          Tip: Drag and drop todos based on priority!
-        </p>
+    <div className="w-full h-full flex flex-col gap-4">
+      <div className=" flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-semibold">Kanban Board</h1>
+          <p className="text-xs text-gray-500">
+            Drag and drop tasks to manage your workflow
+          </p>
+        </div>
+        <form onSubmit={addTodo} className="flex items-center gap-2">
+          <Input
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Add new task..."
+            className="h-8 w-64 text-sm"
+          />
+          <Button
+            type="submit"
+            className="bg-primary-custom hover:bg-primary-custom/90 h-8"
+            size="sm"
+          >
+            <Plus className="size-4 mr-1" /> Add
+          </Button>
+        </form>
       </div>
-
-      <form onSubmit={addTodo} className="flex items-center gap-1">
-        <Input
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder="What do you want to do?"
-          className="h-8 text-sm placeholder:text-xs"
-        />
-        <Button
-          type="submit"
-          className="bg-primary-custom hover:bg-primary-custom/90"
-          size="sm"
-        >
-          Add
-        </Button>
-      </form>
-      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
 
       <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="todos-droppable">
-          {(provided: DroppableProvided, _snapshot: DroppableStateSnapshot) => (
-            <ul
-              className="custom-scrollbar max-h-[20rem] overflow-y-auto"
-              ref={provided.innerRef}
-              {...provided.droppableProps}
+        <div className="grid grid-cols-3 gap-2 pb-2">
+          {columns.map((column) => (
+            <div
+              key={column.id}
+              className="max-h-[390px] flex flex-col bg-gray-50 rounded-lg p-3 border border-gray-200"
             >
-              {todos.length === 0 && (
-                <p className="text-sm font-light text-center mt-4">
-                  No todos yet
-                </p>
-              )}
-              {todos.map((todo, index) => (
-                <Draggable key={todo.id} draggableId={todo.id} index={index}>
-                  {(
-                    provided: DraggableProvided,
-                    snapshot: DraggableStateSnapshot
-                  ) => (
-                    <li
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      className={`flex justify-between items-center p-2 mb-2 rounded shadow bg-white transition-shadow ${
-                        snapshot.isDragging ? "shadow-md" : ""
-                      }`}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`todo-${todo.id}`}
-                          checked={todo.isCompleted}
-                          onCheckedChange={() => toggleTodo(todo.id)}
-                        />
-                        {editingId === todo.id ? (
-                          <input
-                            className="max-w-[200px] break-words border rounded px-1 py-0.5 text-sm focus:outline-none"
-                            value={editValue}
-                            autoFocus
-                            onChange={(e) => setEditValue(e.target.value)}
-                            onBlur={() => saveEdit(todo.id)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                saveEdit(todo.id);
-                              } else if (e.key === "Escape") {
-                                cancelEdit();
-                              }
-                            }}
-                          />
-                        ) : (
-                          <label
-                            htmlFor={`todo-${todo.id}`}
-                            className={`max-w-[200px] break-words ${
-                              todo.isCompleted
-                                ? "line-through text-gray-500"
-                                : ""
-                            }`}
-                          >
-                            {todo.title}
-                          </label>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() =>
-                            editingId === todo.id
-                              ? cancelEdit()
-                              : startEdit(todo.id, todo.title)
-                          }
-                          className="text-gray-400 hover:text-gray-600 focus:outline-none mr-1"
-                          title="Edit"
-                          tabIndex={-1}
+              <h2 className="font-medium text-sm mb-3 text-gray-700 flex justify-between items-center">
+                {column.title}
+                <span className="bg-gray-200 text-gray-600 text-xs px-2 py-0.5 rounded-full">
+                  {todos.filter((t) => t.status === column.id).length}
+                </span>
+              </h2>
+
+              <Droppable droppableId={column.id}>
+                {(
+                  provided: DroppableProvided,
+                  snapshot: DroppableStateSnapshot
+                ) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={`flex-1 min-h-[150px] custom-scrollbar overflow-y-auto transition-colors rounded-md ${
+                      snapshot.isDraggingOver ? "bg-gray-100" : ""
+                    }`}
+                  >
+                    {todos
+                      .filter((t) => t.status === column.id)
+                      .map((todo, index) => (
+                        <Draggable
+                          key={todo.id}
+                          draggableId={todo.id}
+                          index={index}
                         >
-                          <Pencil className="size-3.5" />
-                        </button>
-                        <button
-                          onClick={() => removeTodo(todo.id)}
-                          className="text-primary-custom hover:text-primary-custom/90 focus:outline-none"
-                          title="Delete"
-                        >
-                          <X className="size-4" />
-                        </button>
-                      </div>
-                    </li>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </ul>
-          )}
-        </Droppable>
+                          {(
+                            provided: DraggableProvided,
+                            snapshot: DraggableStateSnapshot
+                          ) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={`bg-white p-2 mb-2 rounded border group hover:shadow-sm transition-all ${
+                                snapshot.isDragging ? "shadow-lg rotate-1" : ""
+                              }`}
+                            >
+                              <div className="flex justify-between items-start gap-2">
+                                {editingId === todo.id ? (
+                                  <div className="flex-1">
+                                    <textarea
+                                      className="w-full border rounded p-1 text-sm focus:outline-none resize-none"
+                                      value={editValue}
+                                      autoFocus
+                                      rows={2}
+                                      onChange={(e) =>
+                                        setEditValue(e.target.value)
+                                      }
+                                      onBlur={() => saveEdit(todo.id)}
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter" && !e.shiftKey) {
+                                          e.preventDefault();
+                                          saveEdit(todo.id);
+                                        } else if (e.key === "Escape") {
+                                          cancelEdit();
+                                        }
+                                      }}
+                                    />
+                                    <div className="flex justify-end gap-1 mt-1">
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 px-2 text-xs"
+                                        onClick={cancelEdit}
+                                      >
+                                        Cancel
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        className="h-6 px-2 text-xs bg-primary-custom"
+                                        onClick={() => saveEdit(todo.id)}
+                                      >
+                                        Save
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span className="text-sm text-gray-800 break-words flex-1 leading-tight">
+                                    {todo.title}
+                                  </span>
+                                )}
+
+                                {!editingId && (
+                                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                      onClick={() =>
+                                        startEdit(todo.id, todo.title)
+                                      }
+                                      className="text-gray-400 hover:text-blue-500"
+                                    >
+                                      <Pencil className="size-3" />
+                                    </button>
+                                    <button
+                                      onClick={() => removeTodo(todo.id)}
+                                      className="text-gray-400 hover:text-red-500"
+                                    >
+                                      <X className="size-4" />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </div>
+          ))}
+        </div>
       </DragDropContext>
     </div>
   );

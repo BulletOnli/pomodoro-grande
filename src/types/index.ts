@@ -1,7 +1,9 @@
+export type TodoStatus = "todo" | "in-progress" | "done";
+
 export type Todo = {
   id: string;
   title: string;
-  isCompleted: boolean;
+  status: TodoStatus;
 };
 
 export type StorageChanges = {

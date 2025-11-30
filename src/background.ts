@@ -168,7 +168,12 @@ chrome.storage.onChanged.addListener((changes) => {
     const newlyCompletedTodos = newChanges.todos.filter((todo: Todo) => {
       const todoAtStart = todosStateAtStart.find((t) => t.id === todo.id);
 
-      return todo.isCompleted && (!todoAtStart || !todoAtStart.isCompleted);
+      const isDone = todo.status === "done" || (todo as any).isCompleted;
+      const wasDone = todoAtStart
+        ? todoAtStart.status === "done" || (todoAtStart as any).isCompleted
+        : false;
+
+      return isDone && !wasDone;
     });
 
     completedTodos = newlyCompletedTodos;

@@ -22,6 +22,11 @@ const App = () => {
         width: "w-[550px]",
         height: DEFAULT_TAB_SIZE.height,
       });
+    } else if (value === "todos") {
+      setTabSize({
+        width: "w-[700px]",
+        height: "h-[570px]",
+      });
     } else if (value === "settings") {
       setTabSize({
         width: DEFAULT_TAB_SIZE.width,
@@ -41,7 +46,7 @@ const App = () => {
       >
         <Header />
 
-        <div className="w-full h-full px-4">
+        <div className="w-full flex-1 min-h-0 px-4 overflow-hidden">
           <PomodoroTimer />
           <TabsContent value="sites">
             <SiteBlocker />
@@ -49,7 +54,7 @@ const App = () => {
           <TabsContent value="settings">
             <Settings />
           </TabsContent>
-          <TabsContent value="todos">
+          <TabsContent value="todos" className="h-full">
             <Todos />
           </TabsContent>
           <TabsContent value="analytics">
