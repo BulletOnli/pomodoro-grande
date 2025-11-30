@@ -109,7 +109,7 @@ const PomodoroTimer = () => {
         </p>
         <h1
           className={`${
-            isBreak ? "text-red-500" : "text-primary-custom"
+            isBreak ? "text-red-500" : ""
           } text-xl text-center font-semibold mb-2`}
         >
           {generateTimerText()}
@@ -170,7 +170,7 @@ const PomodoroTimer = () => {
         )}
       </div>
 
-      <div className="mt-4 flex flex-col items-center justify-center gap-2 text-primary-custom">
+      <div className="mt-4 flex flex-col items-center justify-center gap-2">
         <TodoProgress />
 
         <div className="w-44 h-px bg-primary-custom"></div>

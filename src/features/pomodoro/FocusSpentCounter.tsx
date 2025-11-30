@@ -134,7 +134,9 @@ const FocusSpentCounter = () => {
 
   return (
     <div className="min-w-[80px] flex flex-col items-center justify-center">
-      <p className="text-3xl font-extrabold">{renderTime()}</p>
+      <p className="text-3xl font-extrabold text-primary-custom">
+        {renderTime()}
+      </p>
       <p className="font-semibold">Focus</p>
     </div>
   );

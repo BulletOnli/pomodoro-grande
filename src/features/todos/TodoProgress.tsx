@@ -28,7 +28,7 @@ const TodoProgress = () => {
 
   return (
     <div className="min-w-[80px] flex flex-col items-center justify-center">
-      <p className="text-3xl font-extrabold text-nowrap">
+      <p className="text-3xl font-extrabold text-nowrap text-primary-custom">
         {todos.length > 0 ? `${completedTodos.length} of ${todos.length}` : 0}
       </p>
       <p className="font-semibold">Todos</p>

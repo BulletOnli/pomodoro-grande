@@ -24,7 +24,9 @@ const PomodoroCounter = () => {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <p className="text-3xl font-extrabold">{pomodoroCount}</p>
+      <p className="text-3xl font-extrabold text-primary-custom">
+        {pomodoroCount}
+      </p>
       <p className="font-semibold">Pomodoro</p>
     </div>
   );
