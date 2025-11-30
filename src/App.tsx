@@ -4,7 +4,6 @@ import Settings from "./features/settings/Settings";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import PomodoroTimer from "./features/pomodoro/PomodoroTimer";
 import { useState } from "react";
-import UpdateNotification from "./components/common/UpdateNotification";
 import Todos from "./features/todos/Todos";
 import SiteBlocker from "./features/site-blocker/SiteBlocker";
 import AnalyticsTab from "./features/analytics/AnalyticsTab";
@@ -35,8 +34,6 @@ const App = () => {
 
   return (
     <>
-      <UpdateNotification />
-
       <Tabs
         defaultValue="timer"
         onValueChange={handleTabResize}
