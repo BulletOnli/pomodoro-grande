@@ -8,17 +8,27 @@ import {
 } from "@/components/ui/tooltip";
 import debounce from "@/utils/debounce";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/context/ThemeContext";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const DEFAULT_BADGE_COLOR = "#40A662";
 const DEFAULT_BADGE_FONT_COLOR = "#000000";
 
 const AppearanceSettings = () => {
+  const { theme, setTheme } = useTheme();
   const [badgeColor, setBadgeColor] = useState(DEFAULT_BADGE_COLOR);
   const [badgeFontColor, setBadgeFontColor] = useState(
     DEFAULT_BADGE_FONT_COLOR
   );
 
   const handleReset = () => {
+    setTheme("system");
     setBadgeColor(DEFAULT_BADGE_COLOR);
     setBadgeFontColor(DEFAULT_BADGE_FONT_COLOR);
 
@@ -90,6 +100,31 @@ const AppearanceSettings = () => {
 
   return (
     <div className="w-full space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <p>Theme</p>
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger>
+                <CircleHelp className="text-primary-custom size-4" />
+              </TooltipTrigger>
+              <TooltipContent className="w-[200px] bg-primary-custom text-center">
+                <p>Select the application theme.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <Select value={theme} onValueChange={(value: any) => setTheme(value)}>
+          <SelectTrigger className="w-[140px] h-8">
+            <SelectValue placeholder="Select theme" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="light">Light</SelectItem>
+            <SelectItem value="dark">Dark</SelectItem>
+            <SelectItem value="system">System</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <p>Badge Color</p>

@@ -118,7 +118,7 @@ const Todos = () => {
       <div className=" flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold">Kanban Board</h1>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             Drag and drop tasks to manage your workflow
           </p>
         </div>
@@ -145,11 +145,11 @@ const Todos = () => {
           {columns.map((column) => (
             <div
               key={column.id}
-              className="max-h-[390px] flex flex-col bg-gray-50 rounded-lg p-3 border border-gray-200"
+              className="max-h-[390px] flex flex-col bg-secondary/50 rounded-lg p-3 border border-border"
             >
-              <h2 className="font-medium text-sm mb-3 text-gray-700 flex justify-between items-center">
+              <h2 className="font-medium text-sm mb-3 text-foreground flex justify-between items-center">
                 {column.title}
-                <span className="bg-gray-200 text-gray-600 text-xs px-2 py-0.5 rounded-full">
+                <span className="bg-secondary text-muted-foreground text-xs px-2 py-0.5 rounded-full">
                   {todos.filter((t) => t.status === column.id).length}
                 </span>
               </h2>
@@ -163,7 +163,7 @@ const Todos = () => {
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className={`flex-1 min-h-[150px] custom-scrollbar overflow-y-auto transition-colors rounded-md ${
-                      snapshot.isDraggingOver ? "bg-gray-100" : ""
+                      snapshot.isDraggingOver ? "bg-secondary" : ""
                     }`}
                   >
                     {todos
@@ -182,7 +182,7 @@ const Todos = () => {
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className={`bg-white p-2 mb-2 rounded border group hover:shadow-sm transition-all ${
+                              className={`bg-card text-card-foreground p-2 mb-2 rounded border border-border group hover:shadow-sm transition-all ${
                                 snapshot.isDragging ? "shadow-lg rotate-1" : ""
                               }`}
                             >
@@ -190,7 +190,7 @@ const Todos = () => {
                                 {editingId === todo.id ? (
                                   <div className="flex-1">
                                     <textarea
-                                      className="w-full border rounded p-1 text-sm focus:outline-none resize-none"
+                                      className="w-full bg-transparent border border-border rounded p-1 text-sm focus:outline-none resize-none"
                                       value={editValue}
                                       autoFocus
                                       rows={2}
@@ -226,7 +226,7 @@ const Todos = () => {
                                     </div>
                                   </div>
                                 ) : (
-                                  <span className="text-sm text-gray-800 break-words flex-1 leading-tight">
+                                  <span className="text-sm text-card-foreground break-words flex-1 leading-tight">
                                     {todo.title}
                                   </span>
                                 )}
@@ -237,13 +237,13 @@ const Todos = () => {
                                       onClick={() =>
                                         startEdit(todo.id, todo.title)
                                       }
-                                      className="text-gray-400 hover:text-blue-500"
+                                      className="text-muted-foreground hover:text-blue-500"
                                     >
                                       <Pencil className="size-3" />
                                     </button>
                                     <button
                                       onClick={() => removeTodo(todo.id)}
-                                      className="text-gray-400 hover:text-red-500"
+                                      className="text-muted-foreground hover:text-red-500"
                                     >
                                       <X className="size-4" />
                                     </button>
