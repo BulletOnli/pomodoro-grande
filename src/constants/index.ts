@@ -24,6 +24,6 @@ export const REVIEW_PAGE =
 export const RELEASE_NOTES_URL =
   "https://github.com/BulletOnli/pomodoro-grande/releases";
 
-export const APP_VERSION = "v2.6.0";
+export const APP_VERSION = "v2.6.1";
 
 export const FEEDBACK_FORM_URL = "https://forms.gle/SQ6JwgWiRv79FDPv5";
