@@ -60,7 +60,7 @@ const AnalyticsTab = () => {
   const [filterDate, setFilterDate] = useState<Date>(TODAY_DATE);
 
   useEffect(() => {
-    chrome.storage.sync.get("pomodoroHistory").then((result) => {
+    chrome.storage.local.get("pomodoroHistory").then((result) => {
       if (result.pomodoroHistory) {
         const data = result.pomodoroHistory as PomodoroHistory[];
 
@@ -94,7 +94,7 @@ const AnalyticsTab = () => {
                   completedTodos: sum.completedTodos + entry.completedTodos,
                   totalWorkTime: sum.totalWorkTime + entry.totalWorkTime,
                 }),
-                { totalPomodoros: 0, completedTodos: 0, totalWorkTime: 0 }
+                { totalPomodoros: 0, completedTodos: 0, totalWorkTime: 0 },
               );
 
               // Create hourly time range label
@@ -139,7 +139,7 @@ const AnalyticsTab = () => {
               }
 
               return acc;
-            }, {})
+            }, {}),
           );
 
           setChartData(filteredData || CHART_DATA);
@@ -152,18 +152,18 @@ const AnalyticsTab = () => {
     () => ({
       totalWorkTime: chartData.reduce(
         (acc, curr) => acc + curr.totalWorkTime,
-        0
+        0,
       ),
       totalPomodoros: chartData.reduce(
         (acc, curr) => acc + curr.totalPomodoros,
-        0
+        0,
       ),
       completedTodos: chartData.reduce(
         (acc, curr) => acc + curr.completedTodos,
-        0
+        0,
       ),
     }),
-    [chartData]
+    [chartData],
   );
 
   const renderCustomBarLabel = ({ x, y, width, value }: CustomBarLabel) => {

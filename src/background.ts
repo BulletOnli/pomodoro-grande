@@ -87,7 +87,7 @@ chrome.storage.local.get(
     "isMusicEnabled",
     "musicVolume",
   ],
-  (result) => updateVariables(result as StorageChanges)
+  (result) => updateVariables(result as StorageChanges),
 );
 
 chrome.runtime.onStartup.addListener(async () => {
@@ -104,7 +104,7 @@ chrome.runtime.onStartup.addListener(async () => {
   });
 });
 
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(async () => {
   syncBadgeColors();
 
   updateBadge(time);
@@ -116,6 +116,18 @@ chrome.runtime.onInstalled.addListener(() => {
     longBreak: LONG_BREAK_TIME,
     blockedSites: BLOCKED_SITES,
   });
+
+  // One-time migration: move pomodoroHistory from sync to local
+  const { historyMigrated } = await chrome.storage.local.get("historyMigrated");
+  if (!historyMigrated) {
+    const { pomodoroHistory } =
+      await chrome.storage.sync.get("pomodoroHistory");
+    if (pomodoroHistory?.length) {
+      await chrome.storage.local.set({ pomodoroHistory });
+      await chrome.storage.sync.remove("pomodoroHistory");
+    }
+    await chrome.storage.local.set({ historyMigrated: true });
+  }
 });
 
 chrome.runtime.onMessage.addListener((message) => {
@@ -159,7 +171,7 @@ const syncBadgeColors = () => {
 
 chrome.storage.onChanged.addListener((changes) => {
   const newChanges: StorageChanges = Object.fromEntries(
-    Object.entries(changes).map(([key, value]) => [key, value.newValue])
+    Object.entries(changes).map(([key, value]) => [key, value.newValue]),
   );
   updateVariables(newChanges);
 
@@ -376,32 +388,39 @@ export const recordPomodoroHistory = (): void => {
 
   const totalWorkTime = totalMilliseconds / 1000 / 60;
 
-  chrome.storage.sync.get("pomodoroHistory", (result) => {
+  chrome.storage.local.get("pomodoroHistory", (result) => {
     const history: PomodoroHistory[] = result.pomodoroHistory || [];
     const newData = {
-      createdAt: new Date().toLocaleString(),
+      createdAt: new Date().toISOString(),
       totalPomodoros: pomodoroCount,
       completedTodos: completedTodos.length,
       totalWorkTime,
     };
 
     const aggregatedHistory: PomodoroHistory[] = Object.values(
-      [...history, newData].reduce((acc, current) => {
-        const date = new Date(current.createdAt).toISOString();
+      [...history, newData].reduce(
+        (acc, current) => {
+          const date = new Date(current.createdAt).toISOString();
 
-        if (!acc[date]) {
-          acc[date] = { ...current, createdAt: date };
-        } else {
-          acc[date].totalPomodoros += current.totalPomodoros;
-          acc[date].completedTodos += current.completedTodos;
-          acc[date].totalWorkTime += current.totalWorkTime;
-        }
+          if (!acc[date]) {
+            acc[date] = { ...current, createdAt: date };
+          } else {
+            acc[date].totalPomodoros += current.totalPomodoros;
+            acc[date].completedTodos += current.completedTodos;
+            acc[date].totalWorkTime += current.totalWorkTime;
+          }
 
-        return acc;
-      }, {} as { [key: string]: PomodoroHistory })
+          return acc;
+        },
+        {} as { [key: string]: PomodoroHistory },
+      ),
     );
 
     const trimmedHistory = aggregatedHistory.slice(-100);
-    chrome.storage.sync.set({ pomodoroHistory: trimmedHistory });
+    chrome.storage.local
+      .set({ pomodoroHistory: trimmedHistory })
+      .catch((error) => {
+        console.error("Error saving pomodoro history:", error);
+      });
   });
 };
