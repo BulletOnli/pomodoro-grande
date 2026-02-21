@@ -3,7 +3,6 @@ import sounds from "./constants/sounds";
 import { PomodoroHistory, StorageChanges, Todo } from "./types";
 import { updateBadge } from "./utils/badgeExtension";
 import { createNotification } from "./utils/notification";
-import { blockAllSites, unBlockAllSites } from "./utils/sites";
 
 let WORK_TIME = 1000 * 60 * 25;
 let BREAK_TIME = 1000 * 60 * 5;
@@ -191,14 +190,6 @@ chrome.storage.onChanged.addListener((changes) => {
     completedTodos = newlyCompletedTodos;
   }
 
-  if ((changes.blockedSites || changes.allowedUrls) && isRunning) {
-    blockAllSites();
-  }
-
-  if (isPaused) {
-    unBlockAllSites();
-  }
-
   if (changes.workTime) {
     updateBadge(WORK_TIME);
   }
@@ -221,7 +212,6 @@ const pauseTimer = async (): Promise<void> => {
 
 const startTimer = async (): Promise<void> => {
   clearInterval(interval);
-  blockAllSites();
   isRunning = true;
   isBreak = isPaused ? isBreak : false;
   isPaused = false;
@@ -269,7 +259,6 @@ const stopTimer = async (): Promise<void> => {
   pomodoroCount = 0;
   syncBadgeColors();
   updateBadge(time);
-  unBlockAllSites();
 };
 
 export const handleTimeEnds = async (): Promise<void> => {
@@ -293,10 +282,8 @@ export const handleTimeEnds = async (): Promise<void> => {
   let isLongBreak = pomodoroCount % 4 === 0;
 
   if (isBreak || isPaused) {
-    unBlockAllSites();
     stopMusic();
   } else {
-    blockAllSites();
     if (isMusicEnabled) {
       await playMusic();
     }

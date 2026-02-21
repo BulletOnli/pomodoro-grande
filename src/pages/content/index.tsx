@@ -1,52 +1,63 @@
 import React, { useEffect, useState, useCallback } from "react";
-import "./content.css";
 import { isBlockedSite } from "@/utils/sites";
 import { StorageChanges } from "@/types";
 
-const createFocusOverlay = (): void => {
-  let overlay = document.getElementById("focus-overlay");
+// Store the original page content so we can restore it
+let originalBodyHTML: string | null = null;
+let originalHeadHTML: string | null = null;
+let tabKeyHandler: ((e: KeyboardEvent) => void) | null = null;
 
-  if (!overlay) {
-    overlay = document.createElement("div");
-    overlay.id = "focus-overlay";
-    document.body.appendChild(overlay);
-    document.body.style.overflow = "hidden";
+const createFocusOverlay = (): void => {
+  if (document.getElementById("focus-overlay")) return;
+
+  // Save original page content
+  if (originalBodyHTML === null) {
+    originalBodyHTML = document.body.innerHTML;
+    originalHeadHTML = document.head.innerHTML;
   }
 
-  overlay.innerHTML = `
-    <div class='focus-overlay-footer'>
-      <img src="${chrome.runtime.getURL(
-        "assets/images/icon48.png"
-      )}" alt="Tomato" />
-      <p>Pomodoro Grande</p>
-    </div>
-    <h1>
-      Don't let the tomato distract you!
-    </h1>
+  // Wipe the entire page and replace with premium blocked design
+  document.head.innerHTML = `
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="${chrome.runtime.getURL("assets/css/blocked.css")}?t=${new Date().getTime()}">
   `;
 
-  const tabKeyHandler = (e: KeyboardEvent): void => {
-    if (e.key === "Tab") {
-      e.preventDefault();
-    }
+  document.body.innerHTML = `
+    <div id="focus-overlay">
+      <div class="blocked-container">
+        <div class="blocked-icon">
+          <img src="${chrome.runtime.getURL("assets/images/icon48.png")}" alt="Pomodoro Grande" />
+        </div>
+        <h1 class="blocked-title">Stay <span>focused</span>,<br/>you're doing great!</h1>
+        <div class="blocked-divider"></div>
+        <p class="blocked-subtitle">This site is blocked during your focus session. Keep up the momentum — your future self will thank you.</p>
+      </div>
+      <div class="blocked-footer">
+        <img src="${chrome.runtime.getURL("assets/images/icon48.png")}" alt="" />
+        <p>Pomodoro Grande</p>
+      </div>
+    </div>
+  `;
+
+  tabKeyHandler = (e: KeyboardEvent) => {
+    if (e.key === "Tab") e.preventDefault();
   };
-
   window.addEventListener("keydown", tabKeyHandler);
-
-  // Store reference to cleanup the event listener later
-  (overlay as any).tabKeyHandler = tabKeyHandler;
 };
 
 const removeFocusOverlay = (): void => {
-  const overlay = document.getElementById("focus-overlay");
-  if (overlay) {
-    const tabKeyHandler = (overlay as any).tabKeyHandler;
-    if (tabKeyHandler) {
-      window.removeEventListener("keydown", tabKeyHandler);
-    }
+  if (originalBodyHTML === null) return;
 
-    overlay.remove();
-    document.body.style.overflow = "auto";
+  // Restore the original page
+  document.head.innerHTML = originalHeadHTML!;
+  document.body.innerHTML = originalBodyHTML;
+
+  originalBodyHTML = null;
+  originalHeadHTML = null;
+
+  if (tabKeyHandler) {
+    window.removeEventListener("keydown", tabKeyHandler);
+    tabKeyHandler = null;
   }
 };
 

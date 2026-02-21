@@ -32,10 +32,6 @@ export const mockChrome = {
     create: vi.fn(),
     clear: vi.fn(),
   },
-  declarativeNetRequest: {
-    updateDynamicRules: vi.fn(),
-    getDynamicRules: vi.fn(),
-  },
 };
 
 // Assign to global object before any tests run

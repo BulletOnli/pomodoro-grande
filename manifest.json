@@ -18,12 +18,7 @@
     "default_title": "Pomodoro Grande",
     "default_popup": "index.html"
   },
-  "permissions": [
-    "storage",
-    "notifications",
-    "declarativeNetRequest",
-    "offscreen"
-  ],
+  "permissions": ["storage", "notifications", "offscreen"],
   "background": {
     "service_worker": "src/background.ts",
     "type": "module"
@@ -36,7 +31,12 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["assets/sounds/*.mp3", "offscreen.html"],
+      "resources": [
+        "assets/sounds/*.mp3",
+        "assets/css/blocked.css",
+        "assets/images/*",
+        "offscreen.html"
+      ],
       "matches": ["<all_urls>"]
     }
   ]

@@ -1,0 +1,147 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #0a0f0d;
+  background-image: radial-gradient(
+    ellipse at 50% 40%,
+    rgba(64, 166, 98, 0.12) 0%,
+    transparent 60%
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: "Poppins", Arial, sans-serif;
+  color: #fff;
+  overflow: hidden;
+}
+
+@keyframes fadeInUpContainer {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 24px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px rgba(64, 166, 98, 0.3),
+      0 0 60px rgba(64, 166, 98, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(64, 166, 98, 0.5),
+      0 0 80px rgba(64, 166, 98, 0.2);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.blocked-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  animation: fadeInUpContainer 0.6s ease-out;
+}
+
+.blocked-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  padding: 14px;
+  background: rgba(64, 166, 98, 0.1);
+  border: 1px solid rgba(64, 166, 98, 0.2);
+  animation:
+    pulse-glow 3s ease-in-out infinite,
+    float 4s ease-in-out infinite;
+}
+
+.blocked-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.blocked-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.blocked-title span {
+  color: #40a662;
+}
+
+.blocked-subtitle {
+  font-size: 0.9rem;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  max-width: 320px;
+  line-height: 1.6;
+}
+
+.blocked-divider {
+  width: 48px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #40a662, transparent);
+  border-radius: 2px;
+}
+
+.blocked-footer {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  opacity: 0.4;
+  animation: fadeInUp 0.6s ease-out 0.3s both;
+}
+
+.blocked-footer img {
+  width: 20px;
+  height: 20px;
+  opacity: 0.8;
+}
+
+.blocked-footer p {
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
