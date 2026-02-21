@@ -170,20 +170,20 @@ const PomodoroTimer = () => {
         )}
       </div>
 
-      <div className="mt-4 flex flex-col items-center justify-center gap-2">
-        <TodoProgress />
-
-        <div className="w-44 h-px bg-primary-custom"></div>
-
-        <div className="w-full flex items-center justify-evenly gap-6  ">
-          <PomodoroCounter />
-
-          <div className="w-px h-12 bg-primary-custom"></div>
-
-          <FocusSpentCounter />
+      <div className="w-full space-y-1 mt-auto">
+        <div className="w-full bg-secondary/40 border border-border/50 rounded-xl p-2 transition-colors hover:bg-secondary/60">
+          <TodoProgress />
         </div>
 
-        <p className="text-[10px] font-medium">
+        <div className="flex items-stretch justify-between gap-1 w-full">
+          <div className="flex-1 bg-secondary/40 border border-border/50 rounded-xl p-2 flex items-center justify-center transition-colors hover:bg-secondary/60">
+            <PomodoroCounter />
+          </div>
+          <div className="flex-1 bg-secondary/40 border border-border/50 rounded-xl p-2 flex items-center justify-center transition-colors hover:bg-secondary/60">
+            <FocusSpentCounter />
+          </div>
+        </div>
+        <p className="text-center text-[10px] font-medium">
           This updates everytime the time runs out
         </p>
       </div>
