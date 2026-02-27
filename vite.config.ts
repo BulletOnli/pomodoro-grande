@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import { crx } from "@crxjs/vite-plugin";
-import manifest from "./manifest.json";
+import manifest from "./manifest.config";
 
 export default defineConfig({
   plugins: [react(), crx({ manifest })],
@@ -11,25 +11,14 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  build: {
-    rollupOptions: {
-      input: {
-        popup: "index.html",
-        offscreen: "offscreen.html",
-      },
-      output: {
-        entryFileNames: "[name].js",
-        chunkFileNames: "[name].js",
-        assetFileNames: "[name].[ext]",
-      },
-    },
-  },
-  legacy: {
-    skipWebSocketTokenCheck: true,
-  },
   server: {
+    port: 5173,
+    strictPort: true,
+    hmr: {
+      port: 5173,
+    },
     cors: {
-      origin: ["chrome-extension://"],
+      origin: [/chrome-extension:\/\//],
     },
   },
 });

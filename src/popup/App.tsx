@@ -1,12 +1,12 @@
-import Header from "./components/common/Header";
-import Navbar from "./components/common/Navbar";
-import Settings from "./features/settings/Settings";
+import Header from "@/components/common/Header";
+import Navbar from "@/components/common/Navbar";
+import Settings from "@/features/settings/Settings";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import PomodoroTimer from "./features/pomodoro/PomodoroTimer";
+import PomodoroTimer from "@/features/pomodoro/PomodoroTimer";
 import { useState } from "react";
-import Todos from "./features/todos/Todos";
-import SiteBlocker from "./features/site-blocker/SiteBlocker";
-import AnalyticsTab from "./features/analytics/AnalyticsTab";
+import Todos from "@/features/todos/Todos";
+import SiteBlocker from "@/features/site-blocker/SiteBlocker";
+import AnalyticsTab from "@/features/analytics/AnalyticsTab";
 
 const DEFAULT_TAB_SIZE = {
   width: "w-[350px]", // 320px
@@ -27,7 +27,7 @@ const App = () => {
         width: "w-[700px]",
         height: "h-[570px]",
       });
-    } else if (value === "settings") {
+    } else if (value === "settings" || value === "timer") {
       setTabSize({
         width: DEFAULT_TAB_SIZE.width,
         height: "h-[570px]",

@@ -1,0 +1,46 @@
+import { defineManifest } from "@crxjs/vite-plugin";
+
+export default defineManifest({
+  manifest_version: 3,
+  name: "Pomodoro Grande: Advanced Productivity Timer",
+  short_name: "Pomodoro Timer",
+  version: "2.7.1",
+  description:
+    "A customizable Pomodoro timer with music, website filtering, session analytics, and flexible configuration.",
+  icons: {
+    "16": "assets/images/icon16.png",
+    "48": "assets/images/icon48.png",
+    "128": "assets/images/icon128.png",
+  },
+  action: {
+    default_icon: {
+      "16": "assets/images/icon16.png",
+      "48": "assets/images/icon48.png",
+      "128": "assets/images/icon128.png",
+    },
+    default_title: "Pomodoro Grande",
+    default_popup: "src/popup/index.html",
+  },
+  permissions: ["storage", "notifications", "offscreen"],
+  background: {
+    service_worker: "src/background.ts",
+    type: "module",
+  },
+  content_scripts: [
+    {
+      matches: ["<all_urls>"],
+      js: ["src/content/main.tsx"],
+    },
+  ],
+  web_accessible_resources: [
+    {
+      resources: [
+        "assets/sounds/*.mp3",
+        "assets/css/blocked.css",
+        "assets/images/*",
+        "offscreen.html",
+      ],
+      matches: ["<all_urls>"],
+    },
+  ],
+});
