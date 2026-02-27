@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Pomodoro Grande: Advanced Productivity Timer",
   "short_name": "Pomodoro Timer",
-  "version": "2.7.1",
+  "version": "2.7.2",
   "description": "A customizable Pomodoro timer with music, website filtering, session analytics, and flexible configuration.",
   "icons": {
     "16": "assets/images/icon16.png",
