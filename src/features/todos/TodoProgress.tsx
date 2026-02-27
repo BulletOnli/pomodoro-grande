@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 const TodoProgress = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const completedTodos = todos.filter(
-    (todo) => todo.status === "done" || (todo as any).isCompleted
+    (todo) => todo.status === "done" || (todo as any).isCompleted,
   );
 
   useEffect(() => {
@@ -28,10 +28,10 @@ const TodoProgress = () => {
 
   return (
     <div className="min-w-[80px] flex flex-col items-center justify-center">
-      <p className="text-3xl font-extrabold text-nowrap text-primary-custom">
+      <p className="text-2xl font-extrabold text-nowrap text-primary-custom">
         {todos.length > 0 ? `${completedTodos.length} of ${todos.length}` : 0}
       </p>
-      <p className="font-semibold">Todos</p>
+      <p className="font-semibold text-sm">Todos</p>
     </div>
   );
 };

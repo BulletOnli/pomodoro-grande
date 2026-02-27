@@ -10,7 +10,7 @@ import AnalyticsTab from "./features/analytics/AnalyticsTab";
 
 const DEFAULT_TAB_SIZE = {
   width: "w-[350px]", // 320px
-  height: "h-[520px]",
+  height: "h-[570px]",
 };
 
 const App = () => {
@@ -25,12 +25,7 @@ const App = () => {
     } else if (value === "todos") {
       setTabSize({
         width: "w-[700px]",
-        height: "h-[570px]",
-      });
-    } else if (value === "settings") {
-      setTabSize({
-        width: DEFAULT_TAB_SIZE.width,
-        height: "h-[570px]",
+        height: DEFAULT_TAB_SIZE.height,
       });
     } else {
       setTabSize(DEFAULT_TAB_SIZE);
@@ -46,7 +41,7 @@ const App = () => {
       >
         <Header />
 
-        <div className="w-full flex-1 min-h-0 px-4 overflow-hidden">
+        <div className="w-full h-full flex-1 min-h-0 px-4 overflow-hidden">
           <PomodoroTimer />
           <TabsContent value="sites">
             <SiteBlocker />

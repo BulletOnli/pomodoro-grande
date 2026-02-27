@@ -27,7 +27,7 @@ const FocusSpentCounter = () => {
     };
 
     const handleStorageChange = (
-      changes: Record<string, chrome.storage.StorageChange>
+      changes: Record<string, chrome.storage.StorageChange>,
     ) => {
       if (changes.workTime?.newValue !== undefined) {
         setWorkTime(changes.workTime.newValue);
@@ -71,7 +71,7 @@ const FocusSpentCounter = () => {
   const pluralize = (
     count: number,
     singular: string,
-    plural?: string
+    plural?: string,
   ): string => {
     return count === 1 ? singular : plural || `${singular}s`;
   };
@@ -124,7 +124,7 @@ const FocusSpentCounter = () => {
             &nbsp;
             {renderTimeUnit(
               remainingMinutes,
-              pluralize(remainingMinutes, "min")
+              pluralize(remainingMinutes, "min"),
             )}
           </>
         )}
@@ -134,10 +134,10 @@ const FocusSpentCounter = () => {
 
   return (
     <div className="min-w-[80px] flex flex-col items-center justify-center">
-      <p className="text-3xl font-extrabold text-primary-custom">
+      <p className="text-2xl font-extrabold text-primary-custom">
         {renderTime()}
       </p>
-      <p className="font-semibold">Focus</p>
+      <p className="font-semibold text-sm">Focus</p>
     </div>
   );
 };

@@ -3,14 +3,29 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import debounce from "@/utils/debounce";
 import TodoProgress from "../todos/TodoProgress";
-import { ONE_HOUR } from "@/constants";
+import {
+  BREAK_OPTIONS,
+  LONG_BREAK_OPTIONS,
+  ONE_HOUR,
+  ONE_MINUTE,
+  WORKING_OPTIONS,
+} from "@/constants";
 import { useTimer } from "@/context/TimerContext";
 import { Pause, Play } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CustomSelectInput } from "@/components/ui/select-input";
 import PomodoroCounter from "./PomodoroCounter";
 import FocusSpentCounter from "./FocusSpentCounter";
 
 const PomodoroTimer = () => {
   const [time, setTime] = useState(0);
+  const [workTime, setWorkTime] = useState(0);
+  const [breakTime, setBreakTime] = useState(0);
+  const [longBreak, setLongBreak] = useState(0);
   const {
     isRunning,
     setIsRunning,
@@ -26,8 +41,18 @@ const PomodoroTimer = () => {
 
   useEffect(() => {
     const syncState = async () => {
-      const result = await chrome.storage.local.get(["time"]);
+      const result = await chrome.storage.local.get([
+        "time",
+        "workTime",
+        "breakTime",
+        "longBreak",
+      ]);
       setTime((result.time as number) ?? 0);
+      setWorkTime((result.workTime as number) ?? parseInt(WORKING_OPTIONS[3]));
+      setBreakTime((result.breakTime as number) ?? parseInt(BREAK_OPTIONS[1]));
+      setLongBreak(
+        (result.longBreak as number) ?? parseInt(LONG_BREAK_OPTIONS[1]),
+      );
     };
 
     syncState();
@@ -37,6 +62,9 @@ const PomodoroTimer = () => {
     }) => {
       Object.entries(changes).forEach(([key, { newValue }]) => {
         if (key === "time") setTime(newValue ?? 0);
+        if (key === "workTime") setWorkTime(newValue ?? 0);
+        if (key === "breakTime") setBreakTime(newValue ?? 0);
+        if (key === "longBreak") setLongBreak(newValue ?? 0);
         if (key === "isRunning") setIsRunning(newValue ?? false);
         if (key === "isPaused") setIsPaused(newValue ?? false);
         if (key === "isBreak") setIsBreak(newValue ?? false);
@@ -79,113 +107,233 @@ const PomodoroTimer = () => {
     return new Date(time).toISOString().slice(sliceStart, 19);
   };
 
-  const generateTimerText = () => {
-    if (isPaused) return "Timeout! ⏱️";
+  const handleWorkTimeChange = (value: string) => {
+    const valInt = parseInt(value);
+    setWorkTime(valInt);
 
-    if (!isRunning && !isBreak) return "Ready? Start! 🚀";
-    if (isRunning && !isBreak) return "Focus time! ⚡";
-    if (isRunning && isBreak && !isLongBreak) return "Quick break! ☀️";
-    if (isRunning && isBreak && isLongBreak) return "Long Break! ✨";
-    return "";
+    const updates: any = { workTime: valInt };
+    if (!isBreak) {
+      updates.time = valInt;
+      setTime(valInt);
+    }
+    chrome.storage.local.set(updates);
+  };
+
+  const handleBreakTimeChange = (value: string) => {
+    const valInt = parseInt(value);
+    setBreakTime(valInt);
+
+    const updates: any = { breakTime: valInt };
+    if (isBreak && !isLongBreak) {
+      updates.time = valInt;
+      setTime(valInt);
+    }
+    chrome.storage.local.set(updates);
+  };
+
+  const handleLongBreakChange = (value: string) => {
+    const valInt = parseInt(value);
+    setLongBreak(valInt);
+
+    const updates: any = { longBreak: valInt };
+    if (isBreak && isLongBreak) {
+      updates.time = valInt;
+      setTime(valInt);
+    }
+    chrome.storage.local.set(updates);
   };
 
   return (
-    <TabsContent
-      value="timer"
-      className="flex flex-col items-center justify-center gap-4"
-    >
-      <div className="text-center space-y-2 mt-6">
-        {ultraFocusMode && (
-          <p className="absolute top-14 left-1/2 -translate-x-1/2 text-[10px] px-4 bg-primary-custom text-white rounded-full">
-            Ultra Focus Mode! 🔥
-          </p>
-        )}
-        <p
-          className={`${
-            isBreak ? "text-red-500" : "text-primary-custom"
-          } text-5xl font-bold `}
-        >
-          {formatTimer(time)}
-        </p>
-        <h1
-          className={`${
-            isBreak ? "text-red-500" : ""
-          } text-xl text-center font-semibold mb-2`}
-        >
-          {generateTimerText()}
-        </h1>
-      </div>
+    <TabsContent value="timer" className="h-full">
+      <div className="flex flex-col items-center justify-center gap-4 h-full py-4">
+        <div className="flex w-full flex-col items-center justify-center gap-2 relative">
+          {ultraFocusMode && (
+            <p className="text-[10px] px-4 bg-primary-custom text-white rounded-full">
+              Ultra Focus Mode! 🔥
+            </p>
+          )}
 
-      <div className="flex flex-wrap justify-center items-center gap-2">
-        {isRunning ? (
-          <div className="flex flex-col gap-2 items-center justify-center">
-            <Button
-              size="sm"
-              className="min-w-28 bg-primary-custom hover:bg-primary-custom/80 text-white hover:text-white"
-              onClick={pauseTimer}
+          {/* Work Timer */}
+          <div
+            className={`flex flex-col items-center transition-all duration-300 ${
+              !isBreak ? "scale-100 opacity-100" : "scale-80 opacity-50"
+            }`}
+          >
+            <p className="text-sm font-medium mb-1 truncate text-foreground/70">
+              Work
+            </p>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  disabled={isRunning || ultraFocusMode}
+                  className={`transition-opacity font-bold ${
+                    !isBreak
+                      ? "text-6xl text-primary-custom"
+                      : "text-4xl hover:opacity-80 disabled:opacity-50"
+                  }`}
+                >
+                  {formatTimer(!isBreak ? time : workTime)}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-4 flex flex-col gap-3">
+                <p className="text-sm font-medium">Edit Work Time</p>
+                <CustomSelectInput
+                  disabled={isRunning || ultraFocusMode}
+                  value={workTime.toString()}
+                  onValueChange={handleWorkTimeChange}
+                  options={WORKING_OPTIONS.map((option) => ({
+                    value: option,
+                    label: `${Number(option) / ONE_MINUTE} ${
+                      Number(option) / ONE_MINUTE > 1 ? "minutes" : "minute"
+                    }`,
+                  }))}
+                  placeholder="Select time"
+                  className="w-[180px] h-8"
+                  max={
+                    Number(WORKING_OPTIONS[WORKING_OPTIONS.length - 1]) /
+                    ONE_MINUTE
+                  }
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Break Timer */}
+          {!ultraFocusMode && (
+            <div
+              className={`flex flex-col items-center transition-all duration-300 ${
+                isBreak ? "scale-100 opacity-100" : "scale-80 opacity-50"
+              }`}
             >
-              {isPaused ? (
-                <>
-                  <Play />
-                  Resume
-                </>
-              ) : (
-                <>
-                  <Pause />
-                  Pause
-                </>
-              )}
-            </Button>
+              <p className="text-sm font-medium mb-1 truncate text-foreground/70">
+                {isLongBreak ? "Long Break" : "Break"}
+              </p>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    disabled={isRunning || ultraFocusMode}
+                    className={`transition-opacity font-bold ${
+                      isBreak
+                        ? "text-6xl text-red-500"
+                        : "text-4xl hover:opacity-80 disabled:opacity-50"
+                    }`}
+                  >
+                    {formatTimer(
+                      isBreak ? time : isLongBreak ? longBreak : breakTime,
+                    )}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-4 flex flex-col gap-3">
+                  <p className="text-sm font-medium">
+                    Edit {isLongBreak ? "Long Break" : "Break"} Time
+                  </p>
+                  <CustomSelectInput
+                    disabled={isRunning || ultraFocusMode}
+                    value={
+                      isLongBreak ? longBreak.toString() : breakTime.toString()
+                    }
+                    onValueChange={
+                      isLongBreak
+                        ? handleLongBreakChange
+                        : handleBreakTimeChange
+                    }
+                    options={(isLongBreak
+                      ? LONG_BREAK_OPTIONS
+                      : BREAK_OPTIONS
+                    ).map((option) => ({
+                      value: option,
+                      label: `${Number(option) / ONE_MINUTE} ${
+                        Number(option) / ONE_MINUTE > 1 ? "minutes" : "minute"
+                      }`,
+                    }))}
+                    placeholder="Select time"
+                    className="w-[180px] h-8"
+                    max={
+                      Number(
+                        (isLongBreak ? LONG_BREAK_OPTIONS : BREAK_OPTIONS)[
+                          (isLongBreak ? LONG_BREAK_OPTIONS : BREAK_OPTIONS)
+                            .length - 1
+                        ],
+                      ) / ONE_MINUTE
+                    }
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+        </div>
 
-            <div className="flex items-center gap-1 mx-auto">
+        <div className="flex flex-wrap justify-center items-center gap-2">
+          {isRunning ? (
+            <div className="flex flex-col gap-2 items-center justify-center">
               <Button
                 size="sm"
-                variant="destructive"
-                className="min-w-28 bg-red-500 text-white"
-                onClick={stopTimer}
+                className="min-w-28 bg-primary-custom hover:bg-primary-custom/80 text-white hover:text-white"
+                onClick={pauseTimer}
               >
-                Stop
+                {isPaused ? (
+                  <>
+                    <Play />
+                    Resume
+                  </>
+                ) : (
+                  <>
+                    <Pause />
+                    Pause
+                  </>
+                )}
               </Button>
 
-              {isBreak && (
+              <div className="flex items-center gap-1 mx-auto">
                 <Button
                   size="sm"
-                  variant="outline"
-                  className="min-w-28 bg-primary-custom hover:bg-primary-custom/80 text-white hover:text-white"
-                  onClick={skipTimer}
+                  variant="destructive"
+                  className="min-w-28 bg-red-500 text-white"
+                  onClick={stopTimer}
                 >
-                  Skip
+                  Stop
                 </Button>
-              )}
+
+                {isBreak && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="min-w-28 bg-primary-custom hover:bg-primary-custom/80 text-white hover:text-white"
+                    onClick={skipTimer}
+                  >
+                    Skip
+                  </Button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <Button
+              size="sm"
+              className="min-w-28 bg-primary-custom hover:bg-primary-custom/90"
+              onClick={startTimer}
+            >
+              Start
+            </Button>
+          )}
+        </div>
+
+        <div className="w-full space-y-1 mt-auto">
+          <div className="w-full bg-secondary/40 border border-border/50 rounded-xl p-2 transition-colors hover:bg-secondary/60">
+            <TodoProgress />
+          </div>
+
+          <div className="flex items-stretch justify-between gap-1 w-full">
+            <div className="flex-1 bg-secondary/40 border border-border/50 rounded-xl p-2 flex items-center justify-center transition-colors hover:bg-secondary/60">
+              <PomodoroCounter />
+            </div>
+            <div className="flex-1 bg-secondary/40 border border-border/50 rounded-xl p-2 flex items-center justify-center transition-colors hover:bg-secondary/60">
+              <FocusSpentCounter />
             </div>
           </div>
-        ) : (
-          <Button
-            size="sm"
-            className="min-w-28 bg-primary-custom hover:bg-primary-custom/90"
-            onClick={startTimer}
-          >
-            Start
-          </Button>
-        )}
-      </div>
-
-      <div className="w-full space-y-1 mt-auto">
-        <div className="w-full bg-secondary/40 border border-border/50 rounded-xl p-2 transition-colors hover:bg-secondary/60">
-          <TodoProgress />
+          <p className="text-center text-[10px] font-medium">
+            This updates everytime the time runs out
+          </p>
         </div>
-
-        <div className="flex items-stretch justify-between gap-1 w-full">
-          <div className="flex-1 bg-secondary/40 border border-border/50 rounded-xl p-2 flex items-center justify-center transition-colors hover:bg-secondary/60">
-            <PomodoroCounter />
-          </div>
-          <div className="flex-1 bg-secondary/40 border border-border/50 rounded-xl p-2 flex items-center justify-center transition-colors hover:bg-secondary/60">
-            <FocusSpentCounter />
-          </div>
-        </div>
-        <p className="text-center text-[10px] font-medium">
-          This updates everytime the time runs out
-        </p>
       </div>
     </TabsContent>
   );
