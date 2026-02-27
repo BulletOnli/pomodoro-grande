@@ -43,7 +43,7 @@ const BlockedSites = () => {
   };
 
   return (
-    <div className="w-full space-y-2">
+    <div className="w-full h-full space-y-2">
       <h1 className="text-base text-center font-semibold mb-2">
         Blocked Domains
       </h1>
@@ -65,7 +65,7 @@ const BlockedSites = () => {
       </form>
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
 
-      <ul className="custom-scrollbar max-h-[17rem] overflow-y-auto">
+      <ul className="custom-scrollbar max-h-[21rem] overflow-y-auto">
         {sites.length === 0 && (
           <p className="text-sm font-light text-center mt-4">
             No sites blocked yet

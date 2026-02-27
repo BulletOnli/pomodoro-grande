@@ -55,7 +55,7 @@ const AllowedUrls = () => {
       </form>
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
 
-      <ul className="custom-scrollbar max-h-[17rem] overflow-y-auto">
+      <ul className="custom-scrollbar max-h-[21rem] overflow-y-auto">
         {allowedUrls.length === 0 && (
           <p className="text-sm font-light text-center mt-4">No sites yet</p>
         )}
