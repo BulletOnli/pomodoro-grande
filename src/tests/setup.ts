@@ -7,6 +7,17 @@ export const mockChrome = {
     local: {
       get: vi.fn(),
       set: vi.fn(),
+      remove: vi.fn(),
+    },
+    session: {
+      get: vi.fn(),
+      set: vi.fn(),
+      remove: vi.fn(),
+    },
+    sync: {
+      get: vi.fn(),
+      set: vi.fn(),
+      remove: vi.fn(),
     },
     onChanged: {
       addListener: vi.fn(),
@@ -41,6 +52,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   // Setup default mock values
   mockChrome.storage.local.get.mockResolvedValue({ time: 1500000 }); // 25 minutes
+  mockChrome.storage.session.get.mockResolvedValue({});
+  mockChrome.storage.sync.get.mockResolvedValue({});
 });
 
 // Add any global test setup here

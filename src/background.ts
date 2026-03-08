@@ -51,6 +51,7 @@ const updateVariables = (changes: StorageChanges): void => {
 
   if (changes.isRunning !== undefined) isRunning = changes.isRunning;
   if (changes.isPaused !== undefined) isPaused = changes.isPaused;
+  if (changes.isBreak !== undefined) isBreak = changes.isBreak;
   if (changes.isSoundEnabled !== undefined) {
     isSoundEnabled = changes.isSoundEnabled;
   }
@@ -75,6 +76,7 @@ chrome.storage.local.get(
     "workTime",
     "isRunning",
     "isPaused",
+    "isBreak",
     "breakTime",
     "selectedSound",
     "isSoundEnabled",
@@ -88,6 +90,13 @@ chrome.storage.local.get(
   ],
   (result) => updateVariables(result as StorageChanges),
 );
+
+// Restore pomodoroCount from session storage if service worker wakes up
+chrome.storage.session.get(["pomodoroCount"], (result) => {
+  if (result.pomodoroCount !== undefined) {
+    pomodoroCount = result.pomodoroCount;
+  }
+});
 
 chrome.runtime.onStartup.addListener(async () => {
   stopTimer();
