@@ -19,6 +19,7 @@ import BackgroundMusicSettings from "./BackgroundMusicSettings";
 import {
   APP_VERSION,
   FEEDBACK_FORM_URL,
+  KOFI_URL,
   RELEASE_NOTES_URL,
   REVIEW_PAGE,
 } from "@/constants";
@@ -151,7 +152,7 @@ const SettingsPage = () => {
         icon={<HandHeart className="size-5" />}
         title="Buy me a Tomato"
         subtitle="Send some Tomato Love"
-        url="https://buymeacoffee.com/bulletonli"
+        url={KOFI_URL}
         rightIcon={<ExternalLink className="w-4 h-4" />}
         external
       />
