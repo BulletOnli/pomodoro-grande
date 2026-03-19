@@ -1,14 +1,14 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { mockChrome } from "../setup";
 import { handleTimeEnds } from "../../background";
-import sounds from "@/constants/sounds";
+import sounds from "../../constants/sounds";
 
 describe("Timer Management", () => {
   it("should switch to break mode when work session ends", async () => {
     await handleTimeEnds();
 
     expect(mockChrome.storage.local.set).toHaveBeenCalledWith(
-      expect.objectContaining({ isBreak: true })
+      expect.objectContaining({ isBreak: true }),
     );
 
     expect(mockChrome.action.setBadgeBackgroundColor).toHaveBeenCalledWith({
@@ -20,7 +20,7 @@ describe("Timer Management", () => {
     await handleTimeEnds();
 
     expect(mockChrome.storage.local.set).toHaveBeenCalledWith(
-      expect.objectContaining({ isBreak: false })
+      expect.objectContaining({ isBreak: false }),
     );
 
     expect(mockChrome.action.setBadgeBackgroundColor).toHaveBeenCalledWith({
@@ -40,7 +40,7 @@ describe("Timer Management", () => {
         isBreak: true,
         time: 1000 * 60 * 15, // 15 minute long break
         isLongBreak: true,
-      })
+      }),
     );
 
     expect(mockChrome.notifications.create).toHaveBeenCalledWith(
@@ -48,7 +48,7 @@ describe("Timer Management", () => {
       expect.objectContaining({
         title: "Long Break! ✨",
         message: "Fantastic work session! Time for a proper recharge!",
-      })
+      }),
     );
   });
 

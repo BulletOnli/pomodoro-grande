@@ -26,6 +26,7 @@ let isPaused = false;
 let interval: NodeJS.Timeout | undefined;
 let time = WORK_TIME;
 let pomodoroCount = 0; // 1 Work = 1 Pomodoro
+let lastPomodoroDate = new Date().toDateString();
 
 let selectedSound = sounds[0].value;
 let isSoundEnabled = true;
@@ -92,11 +93,28 @@ chrome.storage.local.get(
 );
 
 // Restore pomodoroCount from session storage if service worker wakes up
-chrome.storage.session.get(["pomodoroCount"], (result) => {
+chrome.storage.session.get(["pomodoroCount", "lastPomodoroDate"], (result) => {
+  if (result.lastPomodoroDate) {
+    lastPomodoroDate = result.lastPomodoroDate;
+  }
   if (result.pomodoroCount !== undefined) {
     pomodoroCount = result.pomodoroCount;
   }
+  checkDailyReset();
 });
+
+function checkDailyReset() {
+  const today = new Date().toDateString();
+  if (lastPomodoroDate !== today) {
+    if (pomodoroCount > 0 || completedTodos.length > 0) {
+      recordPomodoroHistory(lastPomodoroDate);
+    }
+    pomodoroCount = 0;
+    completedTodos = [];
+    lastPomodoroDate = today;
+    chrome.storage.session.set({ pomodoroCount: 0, lastPomodoroDate });
+  }
+}
 
 chrome.runtime.onStartup.addListener(async () => {
   stopTimer();
@@ -165,6 +183,16 @@ chrome.runtime.onMessage.addListener((message) => {
   ) {
     chrome.action.setBadgeTextColor({ color: message.color });
   }
+
+  if (message.type === "reset-pomodoro-count") {
+    if (pomodoroCount > 0 || completedTodos.length > 0) {
+      recordPomodoroHistory(lastPomodoroDate);
+    }
+    pomodoroCount = 0;
+    completedTodos = [];
+    lastPomodoroDate = new Date().toDateString();
+    chrome.storage.session.set({ pomodoroCount: 0, lastPomodoroDate });
+  }
 });
 
 const syncBadgeColors = () => {
@@ -220,6 +248,7 @@ const pauseTimer = async (): Promise<void> => {
 };
 
 const startTimer = async (): Promise<void> => {
+  checkDailyReset();
   clearInterval(interval);
   isRunning = true;
   isBreak = isPaused ? isBreak : false;
@@ -248,9 +277,10 @@ const startTimer = async (): Promise<void> => {
 };
 
 const stopTimer = async (): Promise<void> => {
+  checkDailyReset();
   if (pomodoroCount >= 1 || ultraFocusMode) {
     recordPomodoroHistory();
-    chrome.storage.session.set({ pomodoroCount: 0 });
+    chrome.storage.session.set({ pomodoroCount: 0, lastPomodoroDate: new Date().toDateString() });
   }
 
   clearInterval(interval);
@@ -271,6 +301,8 @@ const stopTimer = async (): Promise<void> => {
 };
 
 export const handleTimeEnds = async (): Promise<void> => {
+  checkDailyReset();
+
   if (selectedSound && isSoundEnabled) {
     await playSound();
   }
@@ -319,7 +351,7 @@ export const handleTimeEnds = async (): Promise<void> => {
   }
 
   chrome.storage.local.set({ isBreak, time, isLongBreak, isPaused });
-  chrome.storage.session.set({ pomodoroCount });
+  chrome.storage.session.set({ pomodoroCount, lastPomodoroDate });
 
   syncBadgeColors();
 };
@@ -373,7 +405,7 @@ const stopMusic = () => {
 };
 
 //*************** Pomodoro history *******************/
-export const recordPomodoroHistory = (): void => {
+export function recordPomodoroHistory(dateOverride?: string): void {
   /**
     * If ultraFocusMode is enabled, calculate the total milliseconds spent on the session (no need to finish the timer)
       Otherwise, calculate the total milliseconds spent on all completed pomodoros
@@ -386,8 +418,17 @@ export const recordPomodoroHistory = (): void => {
 
   chrome.storage.local.get("pomodoroHistory", (result) => {
     const history: PomodoroHistory[] = result.pomodoroHistory || [];
+    
+    // Create Date from overridden date string, or default to current Date
+    const recordDate = dateOverride ? new Date(dateOverride) : new Date();
+    
+    // Set time to near end of day (23:59:59) so it aligns correctly for previous days when parsed backwards
+    if (dateOverride) {
+      recordDate.setHours(23, 59, 59, 999);
+    }
+
     const newData = {
-      createdAt: new Date().toISOString(),
+      createdAt: recordDate.toISOString(),
       totalPomodoros: pomodoroCount,
       completedTodos: completedTodos.length,
       totalWorkTime,

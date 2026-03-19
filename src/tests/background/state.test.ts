@@ -36,7 +36,7 @@ describe("Background State Recovery", () => {
       expect.any(Function),
     );
     expect(mockChrome.storage.session.get).toHaveBeenCalledWith(
-      ["pomodoroCount"],
+      ["pomodoroCount", "lastPomodoroDate"],
       expect.any(Function),
     );
 
@@ -55,5 +55,58 @@ describe("Background State Recovery", () => {
         time: 1000 * 60 * 15,
       }),
     );
+  });
+
+  it("should perform daily reset and record history when date changes across dates", async () => {
+    // Mock session storage to return yesterday's date
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    mockChrome.storage.session.get.mockImplementation((keys: any, cb: any) => {
+      const data = {
+        pomodoroCount: 5,
+        lastPomodoroDate: yesterday.toDateString()
+      };
+      if (typeof cb === "function") cb(data);
+      else if (typeof keys === "function") keys(data);
+      return Promise.resolve(data);
+    });
+
+    // Mock local storage to provide empty history
+    mockChrome.storage.local.get.mockImplementation((keys: any, cb: any) => {
+      const data = { pomodoroHistory: [] };
+      if (typeof cb === "function") cb(data);
+      else if (typeof keys === "function") keys(data);
+      return Promise.resolve(data);
+    });
+
+    mockChrome.storage.local.set.mockResolvedValue(undefined);
+
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date());
+
+    const bg = await import("../../background");
+    
+    // Allow promises to resolve
+    await new Promise(process.nextTick);
+
+    // Assert that the historical analytics were recorded
+    expect(mockChrome.storage.local.set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pomodoroHistory: expect.arrayContaining([
+          expect.objectContaining({ totalPomodoros: 5 })
+        ])
+      })
+    );
+
+    // Assert that the session count was reset to 0
+    expect(mockChrome.storage.session.set).toHaveBeenCalledWith(
+      expect.objectContaining({ 
+        pomodoroCount: 0,
+        lastPomodoroDate: new Date().toDateString() 
+      })
+    );
+
+    vi.useRealTimers();
   });
 });
