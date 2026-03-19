@@ -11,8 +11,17 @@ const PomodoroCounter = () => {
 
   useEffect(() => {
     const syncState = async () => {
-      const result = await chrome.storage.session.get("pomodoroCount");
-      setPomodoroCount((result?.pomodoroCount as number) ?? 0);
+      const result = await chrome.storage.session.get([
+        "pomodoroCount",
+        "lastPomodoroDate",
+      ]);
+
+      const today = new Date().toDateString();
+      if (result.lastPomodoroDate && result.lastPomodoroDate !== today) {
+        setPomodoroCount(0);
+      } else {
+        setPomodoroCount((result?.pomodoroCount as number) ?? 0);
+      }
     };
 
     syncState();

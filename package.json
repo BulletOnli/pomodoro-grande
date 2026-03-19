@@ -1,7 +1,7 @@
 {
   "name": "pomodoro-grande",
   "private": true,
-  "version": "2.7.4",
+  "version": "2.7.5",
   "type": "module",
   "author": {
     "name": "Gemmuel Dela Peña",

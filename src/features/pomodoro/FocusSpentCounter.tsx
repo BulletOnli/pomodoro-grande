@@ -15,11 +15,19 @@ const FocusSpentCounter = () => {
     const syncState = async () => {
       try {
         const [sessionResult, localResult] = await Promise.all([
-          chrome.storage.session.get("pomodoroCount"),
+          chrome.storage.session.get(["pomodoroCount", "lastPomodoroDate"]),
           chrome.storage.local.get("workTime"),
         ]);
 
-        setPomodoroCount(sessionResult?.pomodoroCount ?? 0);
+        const today = new Date().toDateString();
+        if (
+          sessionResult.lastPomodoroDate &&
+          sessionResult.lastPomodoroDate !== today
+        ) {
+          setPomodoroCount(0);
+        } else {
+          setPomodoroCount(sessionResult?.pomodoroCount ?? 0);
+        }
         setWorkTime(localResult?.workTime ?? 0);
       } catch (error) {
         console.error("Failed to sync storage state:", error);

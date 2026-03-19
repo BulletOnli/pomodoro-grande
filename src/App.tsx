@@ -3,7 +3,7 @@ import Navbar from "./components/common/Navbar";
 import Settings from "./features/settings/Settings";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import PomodoroTimer from "./features/pomodoro/PomodoroTimer";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Todos from "./features/todos/Todos";
 import SiteBlocker from "./features/site-blocker/SiteBlocker";
 import AnalyticsTab from "./features/analytics/AnalyticsTab";
@@ -15,6 +15,10 @@ const DEFAULT_TAB_SIZE = {
 
 const App = () => {
   const [tabSize, setTabSize] = useState(DEFAULT_TAB_SIZE);
+
+  useEffect(() => {
+    chrome.runtime.sendMessage({ type: "check-daily-reset" }).catch(() => {});
+  }, []);
 
   const handleTabResize = (value: string) => {
     if (value === "analytics") {

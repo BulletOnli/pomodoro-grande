@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Pomodoro Grande: Advanced Productivity Timer",
   "short_name": "Pomodoro Timer",
-  "version": "2.7.4",
+  "version": "2.7.5",
   "description": "A complete productivity app featuring a custom timer, visual task boards, time tracking, focus music, and a website blocker.",
   "icons": {
     "16": "assets/images/icon16.png",

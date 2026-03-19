@@ -157,6 +157,10 @@ chrome.runtime.onInstalled.addListener(async () => {
 });
 
 chrome.runtime.onMessage.addListener((message) => {
+  if (message.type === "check-daily-reset") {
+    checkDailyReset();
+  }
+
   if (message.type === "start-timer") {
     startTimer().catch(console.error);
   }
@@ -280,7 +284,10 @@ const stopTimer = async (): Promise<void> => {
   checkDailyReset();
   if (pomodoroCount >= 1 || ultraFocusMode) {
     recordPomodoroHistory();
-    chrome.storage.session.set({ pomodoroCount: 0, lastPomodoroDate: new Date().toDateString() });
+    chrome.storage.session.set({
+      pomodoroCount: 0,
+      lastPomodoroDate: new Date().toDateString(),
+    });
   }
 
   clearInterval(interval);
@@ -418,10 +425,10 @@ export function recordPomodoroHistory(dateOverride?: string): void {
 
   chrome.storage.local.get("pomodoroHistory", (result) => {
     const history: PomodoroHistory[] = result.pomodoroHistory || [];
-    
+
     // Create Date from overridden date string, or default to current Date
     const recordDate = dateOverride ? new Date(dateOverride) : new Date();
-    
+
     // Set time to near end of day (23:59:59) so it aligns correctly for previous days when parsed backwards
     if (dateOverride) {
       recordDate.setHours(23, 59, 59, 999);
@@ -460,4 +467,4 @@ export function recordPomodoroHistory(dateOverride?: string): void {
         console.error("Error saving pomodoro history:", error);
       });
   });
-};
+}
