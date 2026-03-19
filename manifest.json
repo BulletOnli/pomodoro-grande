@@ -3,7 +3,7 @@
   "name": "Pomodoro Grande: Advanced Productivity Timer",
   "short_name": "Pomodoro Timer",
   "version": "2.7.4",
-  "description": "An all-in-one productivity extension featuring a customizable timer, Kanban task management, hourly analytics, and built-in focus music with a website blocker.",
+  "description": "A complete productivity app featuring a custom timer, visual task boards, time tracking, focus music, and a website blocker.",
   "icons": {
     "16": "assets/images/icon16.png",
     "48": "assets/images/icon48.png",
