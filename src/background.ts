@@ -40,12 +40,14 @@ let isNotificationEnabled = true;
 
 let completedTodos: Todo[] = [];
 let todosStateAtStart: Todo[] = [];
+let hasLocalPomodoroState = false;
 
 const updateVariables = (changes: StorageChanges): void => {
   if (changes.time !== undefined) time = changes.time;
   if (changes.workTime) WORK_TIME = changes.workTime;
   if (changes.breakTime) BREAK_TIME = changes.breakTime;
   if (changes.longBreak) LONG_BREAK_TIME = changes.longBreak;
+  if (changes.blockedSites) BLOCKED_SITES = changes.blockedSites;
 
   if (changes.selectedSound) selectedSound = changes.selectedSound;
   if (changes.soundVolume !== undefined) soundVolume = changes.soundVolume;
@@ -71,36 +73,57 @@ const updateVariables = (changes: StorageChanges): void => {
   if (changes.musicVolume !== undefined) musicVolume = changes.musicVolume;
 };
 
-chrome.storage.local.get(
-  [
-    "time",
-    "workTime",
-    "isRunning",
-    "isPaused",
-    "isBreak",
-    "breakTime",
-    "selectedSound",
-    "isSoundEnabled",
-    "soundVolume",
-    "longBreak",
-    "isNotificationEnabled",
-    "ultraFocusMode",
-    "selectedMusic",
-    "isMusicEnabled",
-    "musicVolume",
-  ],
-  (result) => updateVariables(result as StorageChanges),
-);
+const stateReady = new Promise<void>((resolve) => {
+  chrome.storage.local.get(
+    [
+      "time",
+      "workTime",
+      "isRunning",
+      "isPaused",
+      "isBreak",
+      "breakTime",
+      "selectedSound",
+      "isSoundEnabled",
+      "soundVolume",
+      "longBreak",
+      "isNotificationEnabled",
+      "ultraFocusMode",
+      "selectedMusic",
+      "isMusicEnabled",
+      "musicVolume",
+      "blockedSites",
+      "pomodoroCount",
+      "lastPomodoroDate",
+    ],
+    (result) => {
+      hasLocalPomodoroState =
+        result.pomodoroCount !== undefined ||
+        result.lastPomodoroDate !== undefined;
+      updateVariables(result as StorageChanges);
+      if (result.lastPomodoroDate) lastPomodoroDate = result.lastPomodoroDate;
+      if (result.pomodoroCount !== undefined)
+        pomodoroCount = result.pomodoroCount;
+      resolve();
+    },
+  );
+});
 
-// Restore pomodoroCount from session storage if service worker wakes up
-chrome.storage.session.get(["pomodoroCount", "lastPomodoroDate"], (result) => {
-  if (result.lastPomodoroDate) {
-    lastPomodoroDate = result.lastPomodoroDate;
-  }
-  if (result.pomodoroCount !== undefined) {
-    pomodoroCount = result.pomodoroCount;
-  }
-  checkDailyReset();
+// Fall back to session storage for state saved by older versions.
+stateReady.then(() => {
+  chrome.storage.session.get(
+    ["pomodoroCount", "lastPomodoroDate"],
+    (result) => {
+      if (!hasLocalPomodoroState) {
+        if (result.lastPomodoroDate) lastPomodoroDate = result.lastPomodoroDate;
+        if (result.pomodoroCount !== undefined)
+          pomodoroCount = result.pomodoroCount;
+        if (result.lastPomodoroDate || result.pomodoroCount !== undefined) {
+          chrome.storage.local.set({ pomodoroCount, lastPomodoroDate });
+        }
+      }
+      checkDailyReset();
+    },
+  );
 });
 
 function checkDailyReset() {
@@ -112,11 +135,12 @@ function checkDailyReset() {
     pomodoroCount = 0;
     completedTodos = [];
     lastPomodoroDate = today;
-    chrome.storage.session.set({ pomodoroCount: 0, lastPomodoroDate });
+    chrome.storage.local.set({ pomodoroCount: 0, lastPomodoroDate });
   }
 }
 
 chrome.runtime.onStartup.addListener(async () => {
+  await stateReady;
   stopTimer();
   syncBadgeColors();
 
@@ -131,17 +155,31 @@ chrome.runtime.onStartup.addListener(async () => {
 });
 
 chrome.runtime.onInstalled.addListener(async () => {
+  await stateReady;
   syncBadgeColors();
 
   updateBadge(time);
 
-  chrome.storage.local.set({
-    time,
-    workTime: WORK_TIME,
-    breakTime: BREAK_TIME,
-    longBreak: LONG_BREAK_TIME,
-    blockedSites: BLOCKED_SITES,
-  });
+  const stored = await chrome.storage.local.get([
+    "time",
+    "workTime",
+    "breakTime",
+    "longBreak",
+    "blockedSites",
+  ]);
+  const defaults = {
+    time: stored.time ?? time,
+    workTime: stored.workTime ?? WORK_TIME,
+    breakTime: stored.breakTime ?? BREAK_TIME,
+    longBreak: stored.longBreak ?? LONG_BREAK_TIME,
+    blockedSites: stored.blockedSites ?? BLOCKED_SITES,
+  };
+  const missingDefaults = Object.fromEntries(
+    Object.entries(defaults).filter(([key]) => stored[key] === undefined),
+  );
+  if (Object.keys(missingDefaults).length > 0) {
+    await chrome.storage.local.set(missingDefaults);
+  }
 
   // One-time migration: move pomodoroHistory from sync to local
   const { historyMigrated } = await chrome.storage.local.get("historyMigrated");
@@ -195,7 +233,7 @@ chrome.runtime.onMessage.addListener((message) => {
     pomodoroCount = 0;
     completedTodos = [];
     lastPomodoroDate = new Date().toDateString();
-    chrome.storage.session.set({ pomodoroCount: 0, lastPomodoroDate });
+    chrome.storage.local.set({ pomodoroCount: 0, lastPomodoroDate });
   }
 });
 
@@ -358,7 +396,7 @@ export const handleTimeEnds = async (): Promise<void> => {
   }
 
   chrome.storage.local.set({ isBreak, time, isLongBreak, isPaused });
-  chrome.storage.session.set({ pomodoroCount, lastPomodoroDate });
+  chrome.storage.local.set({ pomodoroCount, lastPomodoroDate });
 
   syncBadgeColors();
 };

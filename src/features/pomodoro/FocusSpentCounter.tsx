@@ -15,7 +15,7 @@ const FocusSpentCounter = () => {
     const syncState = async () => {
       try {
         const [sessionResult, localResult] = await Promise.all([
-          chrome.storage.session.get(["pomodoroCount", "lastPomodoroDate"]),
+          chrome.storage.local.get(["pomodoroCount", "lastPomodoroDate"]),
           chrome.storage.local.get("workTime"),
         ]);
 

@@ -61,11 +61,11 @@ describe("Background State Recovery", () => {
     // Mock session storage to return yesterday's date
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     mockChrome.storage.session.get.mockImplementation((keys: any, cb: any) => {
       const data = {
         pomodoroCount: 5,
-        lastPomodoroDate: yesterday.toDateString()
+        lastPomodoroDate: yesterday.toDateString(),
       };
       if (typeof cb === "function") cb(data);
       else if (typeof keys === "function") keys(data);
@@ -86,7 +86,7 @@ describe("Background State Recovery", () => {
     vi.setSystemTime(new Date());
 
     const bg = await import("../../background");
-    
+
     // Allow promises to resolve
     await new Promise(process.nextTick);
 
@@ -94,19 +94,67 @@ describe("Background State Recovery", () => {
     expect(mockChrome.storage.local.set).toHaveBeenCalledWith(
       expect.objectContaining({
         pomodoroHistory: expect.arrayContaining([
-          expect.objectContaining({ totalPomodoros: 5 })
-        ])
-      })
+          expect.objectContaining({ totalPomodoros: 5 }),
+        ]),
+      }),
     );
 
-    // Assert that the session count was reset to 0
-    expect(mockChrome.storage.session.set).toHaveBeenCalledWith(
-      expect.objectContaining({ 
+    // Assert that the daily count was reset to 0
+    expect(mockChrome.storage.local.set).toHaveBeenCalledWith(
+      expect.objectContaining({
         pomodoroCount: 0,
-        lastPomodoroDate: new Date().toDateString() 
-      })
+        lastPomodoroDate: new Date().toDateString(),
+      }),
     );
 
     vi.useRealTimers();
+  });
+
+  it("should preserve existing preferences when the extension is updated", async () => {
+    const existingState = {
+      time: 600000,
+      workTime: 900000,
+      breakTime: 300000,
+      longBreak: 600000,
+      blockedSites: ["example.com"],
+    };
+    mockChrome.storage.local.get.mockImplementation((keys: any, cb: any) => {
+      if (typeof cb === "function") cb(existingState);
+      return Promise.resolve(existingState);
+    });
+    mockChrome.storage.local.set.mockResolvedValue(undefined);
+    mockChrome.storage.sync.get.mockResolvedValue({});
+
+    await import("../../background");
+    const onInstalled =
+      mockChrome.runtime.onInstalled.addListener.mock.calls[0][0];
+
+    await onInstalled();
+
+    expect(mockChrome.storage.local.set).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        workTime: existingState.workTime,
+        blockedSites: existingState.blockedSites,
+      }),
+    );
+  });
+
+  it("should use the restored work duration when handling browser startup", async () => {
+    const customWorkTime = 900000;
+    mockChrome.storage.local.get.mockImplementation((keys: any, cb: any) => {
+      const data = { time: 120000, workTime: customWorkTime };
+      if (typeof cb === "function") cb(data);
+      return Promise.resolve(data);
+    });
+    mockChrome.storage.local.set.mockResolvedValue(undefined);
+
+    await import("../../background");
+    const onStartup = mockChrome.runtime.onStartup.addListener.mock.calls[0][0];
+
+    await onStartup();
+
+    expect(mockChrome.storage.local.set).toHaveBeenCalledWith(
+      expect.objectContaining({ time: customWorkTime }),
+    );
   });
 });

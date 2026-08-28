@@ -11,7 +11,7 @@ const PomodoroCounter = () => {
 
   useEffect(() => {
     const syncState = async () => {
-      const result = await chrome.storage.session.get([
+      const result = await chrome.storage.local.get([
         "pomodoroCount",
         "lastPomodoroDate",
       ]);
